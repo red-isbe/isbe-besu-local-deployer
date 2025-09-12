@@ -1,0 +1,17 @@
+
+/plugins/hello-plugin/target/*
+
+# Node/npm (por si se agregan scripts JS)
+node_modules/
+
+# Docker compose override
+/docker-compose.override.yml
+
+# Ignorar configuración y archivos de red 
+/config/*
+!/config/configBootnode.toml
+!/config/configValidators.toml
+!/config/qbftConfigFile.json
+# Ignorar el contenido de QBFT-Network, pero mantiene el directorio
+/QBFT-Network/*
+!/QBFT-Network/.gitkeep
