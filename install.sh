@@ -69,8 +69,8 @@ if ! [[ "$num_nodes" =~ ^[0-9]+$ ]] || (( num_nodes < 4 || num_nodes > 100 )); t
   echo "Number of nodes must be between 4 and 100."
   exit 1
 fi
-if ! [[ "$besuVersion" =~ ^[0-9]{2}\.[0-9]{2}\.[0-9]+$ ]]; then
-  echo "Invalid Besu version format. Use like 24.12.2"
+if ! [[ "$besuVersion" =~ ^[0-9]{2}\.[0-9]{1,2}\.[0-9]+$ ]]; then
+  echo "Invalid Besu version format. Use like 24.12.2 or 25.8.0"
   exit 1
 fi
 if ! [[ "$chainId" =~ ^[0-9]+$ ]] || (( chainId < 1 )); then
@@ -183,6 +183,8 @@ services:
     command: --config-file=/opt/besu/config/configBootnode.toml
     labels:
       - "project-besu"
+    deploy:
+      replicas: 1
 EOF
 
 for ((i=2; i<=num_nodes; i++)); do
@@ -211,6 +213,8 @@ for ((i=2; i<=num_nodes; i++)); do
       - bootnode
     labels:
       - "project-besu"
+    deploy:
+      replicas: 1
 EOF
 done
 

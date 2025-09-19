@@ -11,7 +11,7 @@ volumes:
 
 services:
   bootnode:
-    image: hyperledger/besu:24.12.2
+    image: hyperledger/besu:25.8.0
     container_name: bootnode
     volumes:
       - ./config:/opt/besu/config
@@ -28,7 +28,7 @@ services:
     labels:
       - "project-besu"
   node2:
-    image: hyperledger/besu:24.12.2
+    image: hyperledger/besu:25.8.0
     container_name: node2
     volumes:
       - ./config:/opt/besu/config
@@ -47,7 +47,7 @@ services:
     labels:
       - "project-besu"
   node3:
-    image: hyperledger/besu:24.12.2
+    image: hyperledger/besu:25.8.0
     container_name: node3
     volumes:
       - ./config:/opt/besu/config
@@ -66,7 +66,7 @@ services:
     labels:
       - "project-besu"
   node4:
-    image: hyperledger/besu:24.12.2
+    image: hyperledger/besu:25.8.0
     container_name: node4
     volumes:
       - ./config:/opt/besu/config

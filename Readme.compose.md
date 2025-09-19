@@ -80,12 +80,6 @@ Una vez instalado, usa comandos de Docker Compose para gestionar:
   docker-compose start
   ```
 
-- Escalar validadores (si cambias num_nodes, regenera y up):
-
-  ```bash
-  docker-compose up -d --scale node2=2  # etc.
-  ```
-
 ## Limpieza
 
 Para detener y limpiar todo:
