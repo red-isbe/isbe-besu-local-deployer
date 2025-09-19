@@ -1,9 +1,12 @@
 #!/bin/bash
 
-echo "Stopping and removing Docker containers using 'hyperledger/besu' image... "
+echo "Stopping and removing Docker containers with label 'project-besu'..."
 
-docker ps -a --filter "label=project=besu" -q | xargs -r docker stop
-docker ps -a --filter "label=project=besu" -q | xargs -r docker rm
+containers=$(docker ps -a --filter "label=project-besu" -q)
+if [[ -n "$containers" ]]; then
+  docker stop $containers
+  docker rm $containers
+fi
 
 echo "Cleaning QBFT-Network directory content..."
 if [ -d "QBFT-Network" ]; then

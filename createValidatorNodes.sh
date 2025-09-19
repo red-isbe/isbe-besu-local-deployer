@@ -31,7 +31,7 @@ for ((i = 2; i <= NUM_VALIDATORS; i++)); do
     -p $P2P_PORT:$P2P_PORT \
     -p $RPC_PORT:$RPC_PORT \
     -p $METRICS_PORT:$METRICS_PORT \
-    --label project=besu \
+    --label project-besu \
     --network $NETWORK_NAME \
     --ip $NODE_IP \
     hyperledger/besu:$BESU_VERSION \

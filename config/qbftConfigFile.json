@@ -26,7 +26,7 @@
       "berlinBlock": 0,
       "londonBlock": 0,
       "zeroBaseFee": true,
-      "ecCurve": "secp256k1",
+      "ecCurve": "secp256r1",
       "qbft": {
         "blockperiodseconds": 2,
         "epochlength": 1000,
