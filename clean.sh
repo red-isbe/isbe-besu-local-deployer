@@ -1,12 +1,8 @@
 #!/bin/bash
 
-echo "Stopping and removing Docker containers with label 'project-besu'..."
+echo "Stopping and removing Docker containers with docker-compose..."
 
-containers=$(docker ps -a --filter "label=project-besu" -q)
-if [[ -n "$containers" ]]; then
-  docker stop $containers
-  docker rm $containers
-fi
+docker-compose down -v 2>/dev/null
 
 echo "Cleaning QBFT-Network directory content..."
 if [ -d "QBFT-Network" ]; then
@@ -18,6 +14,11 @@ rm -f config/genesis.json
 if docker network inspect besu-network >/dev/null 2>&1; then
   echo "Removing old Docker network 'besu-network'..."
   docker network rm besu-network >/dev/null 2>&1 || true
+fi
+
+if docker network inspect isbe-besu-local-deployer_besu-network >/dev/null 2>&1; then
+  echo "Removing Docker Compose network 'isbe-besu-local-deployer_besu-network'..."
+  docker network rm isbe-besu-local-deployer_besu-network >/dev/null 2>&1 || true
 fi
 
 echo "Cleanup complete."

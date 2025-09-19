@@ -40,7 +40,7 @@ besuVersion=${besuVersion:-"24.12.2"}
 chainId=${chainId:-2222}
 blockperiodseconds=${blockperiodseconds:-2}
 ellipticCurve=${ellipticCurve:-"secp256k1"}
-ip=${ip:-"172.16.240"}
+ip=${ip:-"172.16.241"}
 
 # Check if defaults were used
 defaults_used=false
@@ -149,25 +149,73 @@ cp networkFiles/genesis.json ../config/genesis.json
 # Move the generated validator keys to each node's data folder
 bash ../moveKeys.sh 
 
-# Create the custom Docker network if not already created
-docker network inspect besu-network >/dev/null 2>&1 || docker network create --driver=bridge --subnet=${ip}.0/24 besu-network
-
 # Return to the parent directory
 cd ..
 
-# Start the bootnode container
-docker run -d --name bootnode \
-  -v "$(pwd)/config:/opt/besu/config" \
-  -v "$(pwd)/QBFT-Network/Node-1/data:/opt/besu/data" \
-  -v "$(pwd)/plugins:/opt/besu/plugins" \
-  -p 30303:30303 \
-  -p 8545:8545 \
-  -p 9545:9545 \
-  --label project-besu \
-  --network besu-network \
-  --ip ${ip}.30 \
-  hyperledger/besu:$besuVersion \
-  --config-file=/opt/besu/config/configBootnode.toml
+# Generate docker-compose.yml
+cat > docker-compose.yml << EOF
+networks:
+  besu-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${ip}.0/24
+
+volumes:
+  config:
+  plugins:
+
+services:
+  bootnode:
+    image: hyperledger/besu:${besuVersion}
+    container_name: bootnode
+    volumes:
+      - ./config:/opt/besu/config
+      - ./QBFT-Network/Node-1/data:/opt/besu/data
+      - ./plugins:/opt/besu/plugins
+    ports:
+      - "30303:30303"
+      - "8545:8545"
+      - "9545:9545"
+    networks:
+      besu-network:
+        ipv4_address: ${ip}.30
+    command: --config-file=/opt/besu/config/configBootnode.toml
+    labels:
+      - "project-besu"
+EOF
+
+for ((i=2; i<=num_nodes; i++)); do
+  port_offset=$((i-1))
+  p2p_port=$((30304 + port_offset))
+  rpc_port=$((8546 + port_offset))
+  metrics_port=$((9546 + port_offset))
+  node_ip="${ip}.$((30 + port_offset))"
+  cat >> docker-compose.yml << EOF
+  node$i:
+    image: hyperledger/besu:${besuVersion}
+    container_name: node$i
+    volumes:
+      - ./config:/opt/besu/config
+      - ./QBFT-Network/Node-$i/data:/opt/besu/data
+      - ./plugins:/opt/besu/plugins
+    ports:
+      - "${p2p_port}:${p2p_port}"
+      - "${rpc_port}:${rpc_port}"
+      - "${metrics_port}:${metrics_port}"
+    networks:
+      besu-network:
+        ipv4_address: ${node_ip}
+    command: --config-file=/opt/besu/config/configValidators.toml --p2p-port=${p2p_port} --rpc-http-port=${rpc_port} --metrics-port=${metrics_port}
+    depends_on:
+      - bootnode
+    labels:
+      - "project-besu"
+EOF
+done
+
+# Start the bootnode with docker-compose
+docker-compose up -d bootnode
 
 # Wait for the bootnode to be ready
 echo "Waiting for the bootnode to be ready..."
@@ -179,8 +227,8 @@ done
 # Fetch the bootnode enode and insert it into the validator config
 bash getEnode.sh ${ip}.30
 
-# Launch all validator node containers
-bash createValidatorNodes.sh $besuVersion $num_nodes $ip
+# Launch all validator node containers with docker-compose
+docker-compose up -d
 
 # Finish
 echo "Setup Complete. Besu network starting! 🚀"

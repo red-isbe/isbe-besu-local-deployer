@@ -1,0 +1,86 @@
+networks:
+  besu-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.241.0/24
+
+volumes:
+  config:
+  plugins:
+
+services:
+  bootnode:
+    image: hyperledger/besu:24.12.2
+    container_name: bootnode
+    volumes:
+      - ./config:/opt/besu/config
+      - ./QBFT-Network/Node-1/data:/opt/besu/data
+      - ./plugins:/opt/besu/plugins
+    ports:
+      - "30303:30303"
+      - "8545:8545"
+      - "9545:9545"
+    networks:
+      besu-network:
+        ipv4_address: 172.16.241.30
+    command: --config-file=/opt/besu/config/configBootnode.toml
+    labels:
+      - "project-besu"
+  node2:
+    image: hyperledger/besu:24.12.2
+    container_name: node2
+    volumes:
+      - ./config:/opt/besu/config
+      - ./QBFT-Network/Node-2/data:/opt/besu/data
+      - ./plugins:/opt/besu/plugins
+    ports:
+      - "30305:30305"
+      - "8547:8547"
+      - "9547:9547"
+    networks:
+      besu-network:
+        ipv4_address: 172.16.241.31
+    command: --config-file=/opt/besu/config/configValidators.toml --p2p-port=30305 --rpc-http-port=8547 --metrics-port=9547
+    depends_on:
+      - bootnode
+    labels:
+      - "project-besu"
+  node3:
+    image: hyperledger/besu:24.12.2
+    container_name: node3
+    volumes:
+      - ./config:/opt/besu/config
+      - ./QBFT-Network/Node-3/data:/opt/besu/data
+      - ./plugins:/opt/besu/plugins
+    ports:
+      - "30306:30306"
+      - "8548:8548"
+      - "9548:9548"
+    networks:
+      besu-network:
+        ipv4_address: 172.16.241.32
+    command: --config-file=/opt/besu/config/configValidators.toml --p2p-port=30306 --rpc-http-port=8548 --metrics-port=9548
+    depends_on:
+      - bootnode
+    labels:
+      - "project-besu"
+  node4:
+    image: hyperledger/besu:24.12.2
+    container_name: node4
+    volumes:
+      - ./config:/opt/besu/config
+      - ./QBFT-Network/Node-4/data:/opt/besu/data
+      - ./plugins:/opt/besu/plugins
+    ports:
+      - "30307:30307"
+      - "8549:8549"
+      - "9549:9549"
+    networks:
+      besu-network:
+        ipv4_address: 172.16.241.33
+    command: --config-file=/opt/besu/config/configValidators.toml --p2p-port=30307 --rpc-http-port=8549 --metrics-port=9549
+    depends_on:
+      - bootnode
+    labels:
+      - "project-besu"
