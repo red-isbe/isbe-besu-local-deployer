@@ -110,6 +110,12 @@ fi
 echo "Cleaning up previous setup folders..."
 docker-compose down -v 2>/dev/null
 
+# Clean QBFT-Network directory
+if [ -d "QBFT-Network" ]; then
+  find QBFT-Network -mindepth 1 ! -name ".gitkeep" -exec rm -rf {} +
+fi
+rm -f config/genesis.json
+
 # Wait for containers to be fully removed
 while docker ps -a --filter "label=project-besu" -q | grep -q .; do
   echo "Waiting for containers to be removed..."
@@ -232,7 +238,7 @@ done
 bash getEnode.sh ${ip}.30
 
 # Launch all validator node containers with docker-compose
-docker-compose up -d
+docker-compose up -d --wait
 
 # Finish
 echo "Setup Complete. Besu network starting! 🚀"
