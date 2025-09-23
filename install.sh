@@ -18,16 +18,23 @@ docker-compose down -v 2>/dev/null
 # Default configuration parameters
 default=""
 advanced=""
-chainId=2222
-blockperiodseconds=2
-num_nodes=4
-besuVersion="24.12.2"
-ellipticCurve="secp256k1"
-ip="172.16.240"
+chainId=$(jq -r '.genesis.config.chainId // empty' ./config/qbftConfigFile.json)
+chainId=${chainId:-$default_chainId}
+blockperiodseconds=$(jq -r '.genesis.config.qbft.blockperiodseconds // empty' ./config/qbftConfigFile.json)
+blockperiodseconds=${blockperiodseconds:-$default_blockperiodseconds}
+num_nodes=$(jq -r '.blockchain.nodes.count // empty' ./config/qbftConfigFile.json)
+num_nodes=${num_nodes:-$default_num_nodes}
+ellipticCurve=$(jq -r '.genesis.config.ecCurve // empty' ./config/qbftConfigFile.json)
+ellipticCurve=${ellipticCurve:-$default_ellipticCurve}
+besuVersion=$(jq -r '.blockchain.nodes.besuVersion // empty' ./config/qbftConfigFile.json)
+besuVersion=${besuVersion:-$default_besuVersion}
+ip=$(jq -r '.blockchain.nodes.ip // empty' ./config/qbftConfigFile.json)
+ip=${ip:-$default_ip}
+
 
 # Ask user if they want to change the default configuration
 while [[ $default != "y" && $default != "n" ]]; do
-  read -p "Do you want to -- CHANGE THE DEFAULT CONFIGURATION ? --  (4 validators nodes, Besu version 24.12.2, Eliptic Curve secp256k1, chainId 2222, 2 sec between blocks, IP 172.16.240.0) Please enter 'y' or 'n': " default
+  read -p "Do you want to -- APPLY THIS CONFIGURATION ? --  (validators nodes: $num_nodes, Besu version: $besuVersion, Elliptic Curve: $ellipticCurve, chainId: $chainId, sec between blocks: $blockperiodseconds, IP: $ip) Please enter 'y' or 'n': " default
   if [[ $default != "y" && $default != "n" ]]; then
     echo "Please enter 'y' or 'n'."
   fi
@@ -41,7 +48,7 @@ jq --arg ec "$ellipticCurve" '.genesis.config.ecCurve = $ec' ./config/qbftConfig
 
 
 # If custom configuration is selected
-if [[ $default == "y" ]]; then
+if [[ $default == "n" ]]; then
   chainId=0
   blockperiodseconds=0
   num_nodes=0
@@ -59,12 +66,13 @@ if [[ $default == "y" ]]; then
   jq --argjson count "$num_nodes" '.blockchain.nodes.count = $count' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
 
   # Prompt user for Besu version
-  while [[ ! $besuVersion =~ ^[0-9]{2}\.[0-9]{2}\.[0-9]+$ ]]; do
-    read -p "Enter the version of Besu (format: 24.12.2): " besuVersion
-    if [[ ! $besuVersion =~ ^[0-9]{2}\.[0-9]{2}\.[0-9]+$ ]]; then
-      echo "Invalid version format. Please use format like 24.12.2"
+  while [[ ! $besuVersion =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && $besuVersion != "latest" ]]; do
+    read -p "Enter the version of Besu (format: 24.12.2 or latest): " besuVersion
+    if [[ ! $besuVersion =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && $besuVersion != "latest" ]]; then
+      echo "Invalid version format. Please use format like 24.12.2 or write \"latest\""
     fi
   done
+  jq --arg besuVersion "$besuVersion" '.blockchain.nodes.besuVersion = $besuVersion' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
 
   # Prompt user for chain ID
   while [[ $chainId -lt 1 ]]; do
@@ -123,8 +131,26 @@ if [[ $default == "y" ]]; then
         continue
       fi
     done
+    jq --arg ip "$ip" '.blockchain.nodes.ip = $ip' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
   fi
+  echo "Deploying Besu! " 
 fi
+
+echo "Cleaning previous Docker Besu containers and folders from previous installations..."
+
+docker ps -a --filter "label=project=besu" -q | xargs -r docker stop
+docker ps -a --filter "label=project=besu" -q | xargs -r docker rm
+
+if [ -d "QBFT-Network" ]; then
+  find QBFT-Network -mindepth 1 ! -name ".gitkeep" -exec rm -rf {} +
+fi
+rm -f config/genesis.json
+
+if docker network inspect besu-network >/dev/null 2>&1; then
+  echo "Removing old Docker network 'besu-network'..."
+  docker network rm besu-network >/dev/null 2>&1 || true
+fi
+
 
 # Create directory structure for validator nodes
 mkdir -p QBFT-Network
@@ -184,4 +210,4 @@ bash getEnode.sh ${ip}.30
 bash createValidatorNodes.sh $besuVersion $num_nodes $ip
 
 # Finish
-echo "Setup Complete. Besu network starting! 🚀"
+echo "Setup Complete. Besu network starting! "

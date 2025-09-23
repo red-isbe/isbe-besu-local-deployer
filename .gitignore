@@ -8,10 +8,7 @@ node_modules/
 /docker-compose.override.yml
 
 # Ignorar configuración y archivos de red 
-/config/*
-!/config/configBootnode.toml
-!/config/configValidators.toml
-!/config/qbftConfigFile.json
+/config/genesis.json
 # Ignorar el contenido de QBFT-Network, pero mantiene el directorio
 /QBFT-Network/*
 !/QBFT-Network/.gitkeep
