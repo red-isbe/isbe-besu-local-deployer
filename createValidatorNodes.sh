@@ -24,6 +24,12 @@ for ((i = 2; i <= NUM_VALIDATORS; i++)); do
 
   echo "Starting $NODE_NAME with IP $NODE_IP and ports: P2P=$P2P_PORT, RPC=$RPC_PORT, METRICS=$METRICS_PORT"
 
+  # Extract version from full image reference if provided
+  CLEAN_VERSION="$BESU_VERSION"
+  if [[ $BESU_VERSION == *":"* ]]; then
+    CLEAN_VERSION=$(echo "$BESU_VERSION" | cut -d':' -f2)
+  fi
+
   docker run -d --name $NODE_NAME \
     -v "$(pwd)/config:/opt/besu/config" \
     -v "$(pwd)/QBFT-Network/Node-$i/data:/opt/besu/data" \
@@ -34,7 +40,7 @@ for ((i = 2; i <= NUM_VALIDATORS; i++)); do
     --label project=besu \
     --network $NETWORK_NAME \
     --ip $NODE_IP \
-    hyperledger/besu:$BESU_VERSION \
+    hyperledger/besu:$CLEAN_VERSION \
     --config-file=/opt/besu/config/configValidators.toml \
     --p2p-port=$P2P_PORT \
     --rpc-http-port=$RPC_PORT \

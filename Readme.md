@@ -133,6 +133,6 @@ docker network prune
 
 - If you want to see which validators contains the extradata field in genesis.json, set that fiel in a extradata.txt in your PWD (just the 0x in your file)
 ```bash
-docker run --rm -v "$(pwd):/opt/besu/data" hyperledger/besu:24.12.2 rlp decode --from=/opt/besu/data/extradata.txt --type=QBFT_EXTRA_DATA
+docker run --rm -v "$(pwd):/opt/besu/data" hyperledger/besu:25.9.0 rlp decode --from=/opt/besu/data/extradata.txt --type=QBFT_EXTRA_DATA
 ```
 
