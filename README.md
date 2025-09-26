@@ -14,7 +14,7 @@ Esta es una **red Hyperledger Besu completamente configurada y verificada** para
 
 ---
 
-##   **CAMBIOS PRINCIPALES PARA secp256r1**
+  **CAMBIOS PRINCIPALES PARA secp256r1**
 
 ###   **1. Configuración Criptográfica**
 ```json
@@ -60,15 +60,13 @@ Durante las pruebas se ha verificado:
 
 ---
 
-## 📚 **LIBRERÍA ESPECIALIZADA PARA R1**
+##  LIBRERÍA ESPECIALIZADA PARA ESTA RED
 
-### 🎯 **Noble Curves R1 Library**
-
-Hemos identificado y configurado una librería específica para interactuar con esta red:
+**[Repositorio de la librería R1D1](https://github.com/alastria/isbe-cliente-firmas-secp256r1/tree/javascript-library/library-javascript)**
  
 
 
-### 📋 **Características de la Librería**:
+###   **Características de la Librería**:
 - ✅ **Soporte nativo secp256r1**
 - ✅ **Compatible con Besu R1**  
 - ✅ **Firma de transacciones verificada**
@@ -135,7 +133,7 @@ curl -X POST --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}
 }
 ```
 
-### 🔑 **Cuenta Pre-configurada** (con fondos):
+### **Cuenta Pre-configurada** (con fondos):
 Debe de derivar correctamente de una clave privada una pública r1.
 Use la librería recomendada para ello.
 
