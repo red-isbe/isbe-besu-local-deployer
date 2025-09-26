@@ -1,5 +1,85 @@
 #   RED BESU secp256r1 "r1d1" - PRODUCCIÓN LISTA
 
+## **CONFIGURACIÓN ESENCIAL PARA CURVA R1 EN BESU**
+
+### **Requisitos Críticos del Sistema**
+
+**IMPORTANTE**: Sin estos componentes, secp256r1 NO funcionará correctamente:
+
+#### **1. NSS Tools (OBLIGATORIO)**
+```bash
+# Linux/Ubuntu
+sudo apt install libnss3-tools
+
+# macOS con Homebrew
+brew install nss
+ln -s /opt/homebrew/lib/libnss3.dylib <jdk_path>/lib/libnss3.dylib
+ln -s /opt/homebrew/lib/libsoftokn3.dylib <jdk_path>/lib/libsoftokn3.dylib
+```
+
+#### **2. Java 17+ con Soporte Completo EC**
+```bash
+# Instalar Java 21+ (recomendado)
+sdk install java 21.0.3-tem 
+sdk use java 21.0.3-tem
+
+# Verificar soporte para secp256r1
+java -version  # Debe ser 17+ para soporte completo
+```
+
+#### **3. Generación Correcta de Claves secp256r1**
+```bash
+# CRÍTICO: Usar groupname secp256r1 (NO secp256k1)
+keytool -genkeypair -keystore client.p12 -storepass test123 -alias client \
+-keyalg EC -groupname secp256r1 -validity 36500 \
+-dname "CN=client.partner.besu.com, OU=partner, O=Besu" \
+-ext san=dns:localhost,ip:127.0.0.1
+```
+
+#### **4. Configuración NSS Database**
+```bash
+# Crear base de datos NSS para certificados R1
+mkdir nssdb
+echo "test123" > nsspin.txt
+certutil -N -d sql:nssdb -f nsspin.txt
+touch ./nssdb/secmod.db
+
+# Configuración PKCS11
+cat <<EOF >./nss.cfg
+name = NSScrypto-r1d1
+nssSecmodDirectory = ./nssdb
+nssDbMode = readOnly
+nssModule = keystore
+showInfo = true
+EOF
+```
+
+#### **5. Optimización Memoria (Recomendado)**
+```bash
+# Configurar jemalloc para mejor rendimiento
+export LD_PRELOAD=libjemalloc.so
+export BESU_USING_JEMALLOC=true
+# Alternativa: export MALLOC_ARENA_MAX=2
+```
+
+### **Verificación de Configuración**
+```bash
+# Verificar requisitos del sistema
+docker --version          # Debe ser 20.10+
+java -version             # Debe ser 17+ (preferible 21+)
+certutil -V               # NSS Tools debe estar instalado
+
+# Verificar keystore generado
+keytool -keystore client.p12 -storepass test123 -list -v
+
+# Verificar base de datos NSS
+certutil -d sql:nssdb -f nsspin.txt -L
+```
+
+**ADVERTENCIA**: Sin NSS Tools y Java 17+, la red R1 no podrá procesar transacciones secp256r1 correctamente.
+
+---
+
 ##   **DESCRIPCIÓN**
 
 Esta es una **red Hyperledger Besu completamente configurada y verificada** para usar la curva criptográfica **secp256r1 (NIST P-256)** en lugar del estándar secp256k1. 
