@@ -96,14 +96,90 @@ Esta es una **red Hyperledger Besu completamente configurada y verificada** para
 
   **CAMBIOS PRINCIPALES PARA secp256r1**
 
-###   **1. Configuración Criptográfica**
+###   **1. Configuración**
 ```json
 {
-  "curve": "secp256r1",
-  "standard": "NIST P-256", 
-  "chainId": 2222,
-  "networkName": "r1d1"
+  "genesis": {
+    "nonce": "0x0",
+    "timestamp": "0x0",
+    "extraData": "0xf8a4a00000000000000000000000000000000000000000000000000000000000000000f87e94e4d2cced4cd6d9f963eeba9d0038b546e2376e6a94d60203fcd65cf1472ee22277dce9fb5fd41f171e946174365d69c09b040476ac6a76f5af4e469750d59403fab32bf53d712b7e3ba456a2d0d1ff1a6b054094a41af77b076d8c9d415cad1917e3cd9ce25b75d8949978504d6d370e6d0f1ef1fab1ac12ddbde4b186c080c0",
+    "gasLimit": "0x1fffffffffffff",
+    "gasUsed": "0x0",
+    "number": "0x0",
+    "difficulty": "0x1",
+    "coinbase": "0x0000000000000000000000000000000000000000",
+    "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "config": {
+      "chainId": 2222,
+      "contractSizeLimit": 24576,
+      "homesteadBlock": 0,
+      "eip150Block": 0,
+      "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "eip155Block": 0,
+      "eip158Block": 0,
+      "byzantiumBlock": 0,
+      "constantinopleBlock": 0,
+      "petersburgBlock": 0,
+      "istanbulBlock": 0,
+      "muirglacierblock": 0,
+      "berlinBlock": 0,
+      "londonBlock": 0,
+      "parisBlock": 0,
+      "shanghaiBlock": 0,
+      "zeroBaseFee": true,
+      "ecCurve": "secp256r1",
+      "qbft": {
+        "blockperiodseconds": 2,
+        "epochlength": 1000,
+        "requesttimeoutseconds": 2
+      },
+      "ellipticCurve": "secp256r1"
+    },
+    "alloc": {
+      "0xbebd29124435700f87a3821dc95eea8ab95fcb1b": {
+        "balance": "1000000000000000000000000000"
+      },
+      "0xcbac250151088ae5137039d4b0b10f0a8d55ea42": {
+        "balance": "1000000000000000000000000000"
+      },
+      "0x56db16fa6e201d894db6a158999eda03b94b4a7d": {
+        "balance": "1000000000000000000000000000"
+      },
+      "0x52b1f2380d94b25f1dece54b0cc8d8b1c5990cc8": {
+        "balance": "1000000000000000000000000000"
+      },
+      "0x19a005cf2ad7e7a88b41a9b8208b0c374123efdf": {
+        "balance": "1000000000000000000000000000"
+      },
+      "0xa58ede5c366a3398c6863325a83af2074990db5c": {
+        "balance": "1000000000000000000000000000"
+      },
+      "0x049bEe05040C428aB767d5582eEC159EB5a9de75": {
+        "balance": "1000000000000000000000000000"
+      },
+      "0x1a179f6dfcfaff34b4f045dd0d50a7b426233726": {
+        "balance": "1000000000000000000000000000",
+        "comment": "secp256r1 account for deployment"
+      },
+      "0xdB11FEfA99BfD167ace7D73057909Afe9b2068C0": {
+        "balance": "1000000000000000000000000000",
+        "comment": "secp256r1 account #2"
+      },
+      "0x6b5be277e2ddf8bbf6193205cb84cca3ab8576bc": {
+        "balance": "9000000000000000000000000000",
+        "comment": "secp256r1 account #3"
+      }
+    }
+  },
+  "blockchain": {
+    "nodes": {
+      "generate": true,
+      "count": 4
+    }
+  }
 }
+
 ```
 
 ###   **2. Genesis Block Modificado**
