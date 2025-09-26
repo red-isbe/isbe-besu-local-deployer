@@ -96,7 +96,7 @@ Esta es una **red Hyperledger Besu completamente configurada y verificada** para
 
   **CAMBIOS PRINCIPALES PARA secp256r1**
 
-###   **1. Configuración**
+###   **1. qbftConfigFile.json**
 ```json
 {
   "genesis": {
@@ -194,25 +194,6 @@ Esta es una **red Hyperledger Besu completamente configurada y verificada** para
 - **Plugin oficial**: Soporte nativo para curva R1
 - **keytool**: Configurado para generar claves secp256r1
 
----
-
-## ✅ **VERIFICACIÓN DE DEPLOY DE CONTRATOS**
-
-###   **DEPLOY EXITOSO CONFIRMADO**
-
-**✅ HEMOS VERIFICADO QUE LOS CONTRATOS SE DESPLIEGAN CORRECTAMENTE**
-
-Durante las pruebas se ha verificado:
-
-1. **✅ Compilación Solidity**: Contratos compilados con evmVersion "shanghai"
-2. **✅ Firma secp256r1**: Transacciones firmadas correctamente con curva R1  
-3. **✅ RPC Compatibility**: Besu acepta y procesa transacciones R1
-4. **✅ Gas Estimation**: Estimación de gas funcional para contratos
-5. **✅ Event Logging**: Eventos emitidos y capturados correctamente
-6. **✅ State Changes**: Modificaciones de estado confirmadas
-
- **Derivación: @noble/curves/p256**:
- 
 
 ---
 
@@ -230,14 +211,27 @@ Durante las pruebas se ha verificado:
 - ✅ **Recuperación de direcciones exacta**
 
 ---
+
+## ✅ **VERIFICACIÓN DE DEPLOY DE CONTRATOS**
+
+###   **DEPLOY EXITOSO CONFIRMADO**
+
+**✅ HEMOS VERIFICADO QUE LOS CONTRATOS SE DESPLIEGAN CORRECTAMENTE**
+
+Durante las pruebas se ha verificado:
+
+1. **✅ Compilación Solidity**: Contratos compilados con evmVersion "shanghai"
+2. **✅ Firma secp256r1**: Transacciones firmadas correctamente con curva R1  
+3. **✅ RPC Compatibility**: Besu acepta y procesa transacciones R1
+4. **✅ Gas Estimation**: Estimación de gas funcional para contratos
+5. **✅ Event Logging**: Eventos emitidos y capturados correctamente
+6. **✅ State Changes**: Modificaciones de estado confirmadas
+
  
 
-###  **Especificaciones**:
-- **Consenso**: QBFT (4 validadores)
-- **Block Time**: ~1 segundo  
-- **Gas Limit**: 10,000,000 per block
-- **Base Fee**: 0 (zero base fee enabled)
-- **Fork**: Paris + Shanghai activados
+---
+ 
+ 
 
 ---
 
