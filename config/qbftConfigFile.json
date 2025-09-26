@@ -25,14 +25,16 @@
       "muirglacierblock": 0,
       "berlinBlock": 0,
       "londonBlock": 0,
+      "parisBlock": 0,
+      "shanghaiBlock": 0,
       "zeroBaseFee": true,
-      "ecCurve": "secp256k1",
+      "ecCurve": "secp256r1",
       "qbft": {
         "blockperiodseconds": 2,
         "epochlength": 1000,
         "requesttimeoutseconds": 2
       },
-      "ellipticCurve": "secp256k1"
+      "ellipticCurve": "secp256r1"
     },
     "alloc": {
       "0xbebd29124435700f87a3821dc95eea8ab95fcb1b": {
@@ -64,9 +66,9 @@
         "balance": "1000000000000000000000000000",
         "comment": "secp256r1 account #2"
       },
-      "0xdc023f23b874f17c6d8b7444ef8c7c3eab4c25c4": {
-        "balance": "1000000000000000000000000000",
-        "comment": "secp256r1 fernando"
+      "0x6b5be277e2ddf8bbf6193205cb84cca3ab8576bc": {
+        "balance": "9000000000000000000000000000",
+        "comment": "secp256r1 account #3"
       }
     }
   },
