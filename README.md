@@ -109,41 +109,6 @@ curl -X POST --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}
 - **Elliptic Curve**: secp256r1
 - **Block Period**: 2 segundos
 
-### Cuentas preconfiguradas
-```
-0x1a179f6dfcfaff34b4f045dd0d50a7b426233726  # 1000 ETH (deployment)
-0xdB11FEfA99BfD167ace7D73057909Afe9b2068C0  # 1000 ETH (testing)
-0x6b5be277e2ddf8bbf6193205cb84cca3ab8576bc  # 9000 ETH (whale)
-```
-
-## CONFIGURACIÓN HARDHAT
-
-### hardhat.config.js
-```javascript
-require("@nomicfoundation/hardhat-toolbox");
-
-module.exports = {
-  solidity: {
-    version: "0.8.28",
-    settings: {
-      optimizer: { enabled: true, runs: 200 },
-      evmVersion: "cancun"
-    }
-  },
-  networks: {
-    besu_r1: {
-      url: "http://localhost:8545",
-      chainId: 2222,
-      accounts: { mnemonic: "YOUR_MNEMONIC_HERE" },
-      gasPrice: 0,
-      gas: 50000000,
-      blockGasLimit: 0x1fffffffffffff,
-      timeout: 60000,
-      allowUnlimitedContractSize: true
-    }
-  }
-};
-```
 
 ### Comandos básicos
 ```bash
