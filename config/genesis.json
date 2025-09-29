@@ -1,7 +1,7 @@
 {
   "nonce" : "0x0",
   "timestamp" : "0x0",
-  "extraData" : "0xf87aa00000000000000000000000000000000000000000000000000000000000000000f85494d5e398ff3e135cf542a1cbd78cc470ac13c5f4519440fae8cc6fd35bf82f6b2f2295650979f63e6fda946020cb09432462e9dcb64414fa042acea43165359467f6483752be485d4fa6a781d54ed910fc13a6e4c080c0",
+  "extraData" : "0xf87aa00000000000000000000000000000000000000000000000000000000000000000f8549403c346a6ebf92c8bddedc83a0e48ab636495992a940cc5c960c2ed8a6e16d93bf41f4d38f767e9ddf894c80e9d4d54e73434fc9fb8483f36535099590d3194337c7d2d3644ef397a11dc63071ca37b34572f6ac080c0",
   "gasLimit" : "0x1fffffffffffff",
   "gasUsed" : "0x0",
   "number" : "0x0",
@@ -28,7 +28,7 @@
     "ecCurve" : "secp256k1",
     "qbft" : {
       "blockperiodseconds" : 2,
-      "epochlength" : 1000,
+      "epochlength" : 50,
       "requesttimeoutseconds" : 2
     },
     "ellipticCurve" : "secp256k1"

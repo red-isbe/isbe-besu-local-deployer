@@ -29,7 +29,7 @@
       "ecCurve": "secp256k1",
       "qbft": {
         "blockperiodseconds": 2,
-        "epochlength": 1000,
+        "epochlength": 50,
         "requesttimeoutseconds": 2
       },
       "ellipticCurve": "secp256k1"

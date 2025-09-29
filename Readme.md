@@ -21,7 +21,7 @@ There is a [Troubleshooting section](#troubleshooting) also if you have some pro
 
 🟡 Docker and Docker-compose installed 
 
-🟡 jq installed ($ brew install jq)
+🟡 jq installed ($ apt-get install jq)
 
 🟡 Docker running 
 
@@ -88,8 +88,9 @@ Also, you can find an example of a plugin in the plugins/hello-plugin folder.
 
 🟡 First if you want access to the geth console you need to install first:
 ```bash
-brew install geth
+apt-get install geth
 ```
+(or brew install geth)
 
 Then run the Node Console
 ```bash
@@ -111,6 +112,31 @@ Also calls directly through curl like:
 curl -X POST --data '{"jsonrpc":"2.0",curl -X POST --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x<YourAccountAddress>", "latest"],"id":1}' http://0.0.0.0:8545
 ```
  
+
+### ➡️ Light Explorer + Node Validator Managment
+
+You can use the explorer folder to run a light explorer that will connect to your besu node and show you some information about the network.
+It is automatically configured to connect to the besu node running in localhost:8545 and with all the validators that you have configured in the installation.
+
+Go to the explorer folder:
+```bash
+cd explorer
+``` 
+
+Now you can run once:
+```bash
+npm install
+```
+
+And then to run the explorer:
+```bash
+npm run dev
+```
+
+This will create the explorer service in http://localhost:25000
+
+There you can see the blocks, transactions, and validators of your network.
+
 Troubleshooting
 ---------------
 

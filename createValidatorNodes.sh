@@ -18,7 +18,7 @@ for ((i = 2; i <= NUM_VALIDATORS; i++)); do
 
   PORT_OFFSET=$((i - 1))
   P2P_PORT=$((30304 + PORT_OFFSET))
-  RPC_PORT=$((8546 + PORT_OFFSET))
+  RPC_PORT=$((8545 + PORT_OFFSET))
   METRICS_PORT=$((9546 + PORT_OFFSET))
   NODE_IP="$BASE_IP.$((30 + PORT_OFFSET))"
 
@@ -40,3 +40,35 @@ for ((i = 2; i <= NUM_VALIDATORS; i++)); do
     --rpc-http-port=$RPC_PORT \
     --metrics-port=$METRICS_PORT
 done
+
+# Generate explorer config deterministically from NUM_VALIDATORS
+EXPLORER_CONFIG="explorer/src/config/config.json"
+
+echo "Generating $EXPLORER_CONFIG for $NUM_VALIDATORS validators"
+
+nodes_json=""
+
+# Node-1 as rpcnode
+nodes_json="{\"name\": \"rpcnode\", \"client\": \"besu\", \"rpcUrl\": \"http://127.0.0.1:8545\", \"privateTxUrl\": \"\"}"
+
+# Remaining nodes as node1..nodeN-1
+if [ "$NUM_VALIDATORS" -ge 2 ]; then
+  for ((i = 2; i <= NUM_VALIDATORS; i++)); do
+    idx=$((i - 1))
+    rpc_port=$((8545 + (i - 1)))
+    entry="{\"name\": \"node$idx\", \"client\": \"besu\", \"rpcUrl\": \"http://127.0.0.1:$rpc_port\", \"privateTxUrl\": \"\"}"
+    nodes_json="$nodes_json, $entry"
+  done
+fi
+
+mkdir -p "$(dirname "$EXPLORER_CONFIG")"
+cat > "$EXPLORER_CONFIG" <<EOF
+{
+  "algorithm": "qbft",
+  "nodes": [
+    $nodes_json
+  ]
+}
+EOF
+
+echo "Explorer config written to $EXPLORER_CONFIG"

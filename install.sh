@@ -15,13 +15,15 @@ echo "Docker is installed and running."
 echo "Cleaning up previous setup folders..."
 docker-compose down -v 2>/dev/null
 
-# Default configuration parameters
+# Default configuration parameters (load current config and keep as defaults)
 default=""
 advanced=""
 chainId=$(jq -r '.genesis.config.chainId // empty' ./config/qbftConfigFile.json)
 chainId=${chainId:-$default_chainId}
 blockperiodseconds=$(jq -r '.genesis.config.qbft.blockperiodseconds // empty' ./config/qbftConfigFile.json)
 blockperiodseconds=${blockperiodseconds:-$default_blockperiodseconds}
+epochlength=$(jq -r '.genesis.config.qbft.epochlength // empty' ./config/qbftConfigFile.json)
+epochlength=${epochlength:-$default_epochlength}
 num_nodes=$(jq -r '.blockchain.nodes.count // empty' ./config/qbftConfigFile.json)
 num_nodes=${num_nodes:-$default_num_nodes}
 ellipticCurve=$(jq -r '.genesis.config.ecCurve // empty' ./config/qbftConfigFile.json)
@@ -31,10 +33,20 @@ besuVersion=${besuVersion:-$default_besuVersion}
 ip=$(jq -r '.blockchain.nodes.ip // empty' ./config/qbftConfigFile.json)
 ip=${ip:-$default_ip}
 
+# Preserve defaults for prompts
+def_chainId="$chainId"
+def_blockperiodseconds="$blockperiodseconds"
+def_epochlength="$epochlength"
+def_num_nodes="$num_nodes"
+def_ellipticCurve="$ellipticCurve"
+def_besuVersion="$besuVersion"
+def_ip="$ip"
+
 
 # Ask user if they want to change the default configuration
 while [[ $default != "y" && $default != "n" ]]; do
-  read -p "Do you want to -- APPLY THIS CONFIGURATION ? --  (validators nodes: $num_nodes, Besu version: $besuVersion, Elliptic Curve: $ellipticCurve, chainId: $chainId, sec between blocks: $blockperiodseconds, IP: $ip) Please enter 'y' or 'n': " default
+  read -p "Do you want to -- APPLY THIS CONFIGURATION ? [default enter key value] --  (validators nodes: $num_nodes, Besu version: $besuVersion, Elliptic Curve: $ellipticCurve, chainId: $chainId, sec between blocks: $blockperiodseconds, epoch length: $epochlength, IP: $ip) [Y/n]: " default
+  if [[ -z $default ]]; then default="y"; fi
   if [[ $default != "y" && $default != "n" ]]; then
     echo "Please enter 'y' or 'n'."
   fi
@@ -43,21 +55,23 @@ done
 # Update genesis file with default chainId and block period
 jq --argjson chainId "$chainId" '.genesis.config.chainId = $chainId' ./config/qbftConfigFile.json >temp.json && mv temp.json ./config/qbftConfigFile.json
 jq --argjson blockperiodseconds "$blockperiodseconds" '.genesis.config.qbft.blockperiodseconds = $blockperiodseconds' ./config/qbftConfigFile.json >temp.json && mv temp.json ./config/qbftConfigFile.json
+jq --argjson epochlength "$epochlength" '.genesis.config.qbft.epochlength = $epochlength' ./config/qbftConfigFile.json >temp.json && mv temp.json ./config/qbftConfigFile.json
 jq --argjson count "$num_nodes" '.blockchain.nodes.count = $count' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
 jq --arg ec "$ellipticCurve" '.genesis.config.ecCurve = $ec' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
 
 
 # If custom configuration is selected
 if [[ $default == "n" ]]; then
-  chainId=0
-  blockperiodseconds=0
-  num_nodes=0
-  besuVersion=""
+  # Keep current values as defaults; allow Enter to accept them
 
   # Prompt user for number of nodes
-  while [[ $num_nodes -lt 4 || $num_nodes -gt 100 ]]; do
-    read -p "Enter the number of nodes (including the bootnode, minimum 4): " num_nodes
-    if [[ "$num_nodes" =~ ^[0-9]+$ ]] && (( num_nodes >= 4 && num_nodes <= 100 )); then
+  while true; do
+    read -p "Enter the number of nodes (including the bootnode, minimum 4) [$num_nodes]: " ans
+    if [[ -z "$ans" ]]; then
+      break
+    fi
+    if [[ "$ans" =~ ^[0-9]+$ ]] && (( ans >= 4 && ans <= 100 )); then
+      num_nodes=$ans
       break
     else
       echo "You must create at least 4 nodes and maximum 100. Please try again."
@@ -66,35 +80,69 @@ if [[ $default == "n" ]]; then
   jq --argjson count "$num_nodes" '.blockchain.nodes.count = $count' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
 
   # Prompt user for Besu version
-  while [[ ! $besuVersion =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && $besuVersion != "latest" ]]; do
-    read -p "Enter the version of Besu (format: 24.12.2 or latest): " besuVersion
-    if [[ ! $besuVersion =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && $besuVersion != "latest" ]]; then
+  while true; do
+    read -p "Enter the version of Besu (format: 24.12.2 or latest) [$besuVersion]: " ans
+    if [[ -z "$ans" ]]; then
+      break
+    fi
+    if [[ $ans =~ ^[0-9]+\.[0-9]+\.[0-9]+$ || $ans == "latest" ]]; then
+      besuVersion="$ans"
+      break
+    else
       echo "Invalid version format. Please use format like 24.12.2 or write \"latest\""
     fi
   done
   jq --arg besuVersion "$besuVersion" '.blockchain.nodes.besuVersion = $besuVersion' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
 
   # Prompt user for chain ID
-  while [[ $chainId -lt 1 ]]; do
-    read -p "Enter the chain ID (e.g. 1234): " chainId
-    if [[ $chainId -lt 1 ]]; then
+  while true; do
+    read -p "Enter the chain ID (e.g. 1234) [$chainId]: " ans
+    if [[ -z "$ans" ]]; then
+      break
+    fi
+    if [[ "$ans" =~ ^[0-9]+$ ]] && (( ans >= 1 )); then
+      chainId=$ans
+      break
+    else
       echo "You must enter a valid chain ID. Please try again."
     fi
   done
   jq --argjson chainId "$chainId" '.genesis.config.chainId = $chainId' ./config/qbftConfigFile.json >temp.json && mv temp.json ./config/qbftConfigFile.json
 
   # Prompt user for block period
-  while [[ $blockperiodseconds -lt 1 || $blockperiodseconds -gt 30 ]]; do
-    read -p "Enter the block period in seconds (between 2 - 30): " blockperiodseconds
-    if [[ $blockperiodseconds -lt 2 || $blockperiodseconds -gt 30 ]]; then
+  while true; do
+    read -p "Enter the block period in seconds (between 2 - 30) [$blockperiodseconds]: " ans
+    if [[ -z "$ans" ]]; then
+      break
+    fi
+    if [[ "$ans" =~ ^[0-9]+$ ]] && (( ans >= 2 && ans <= 30 )); then
+      blockperiodseconds=$ans
+      break
+    else
       echo "You must enter a block period in seconds within the interval. Please try again."
     fi
   done
   jq --argjson blockperiodseconds "$blockperiodseconds" '.genesis.config.qbft.blockperiodseconds = $blockperiodseconds' ./config/qbftConfigFile.json >temp.json && mv temp.json ./config/qbftConfigFile.json
 
+  # Prompt user for epoch length
+  while true; do
+    read -p "Enter the epoch length in blocks [$epochlength]: " ans
+    if [[ -z "$ans" ]]; then
+      break
+    fi
+    if [[ "$ans" =~ ^[0-9]+$ ]] && (( ans >= 1 )); then
+      epochlength=$ans
+      break
+    else
+      echo "You must enter a valid epoch length (>= 1). Please try again."
+    fi
+  done
+  jq --argjson epochlength "$epochlength" '.genesis.config.qbft.epochlength = $epochlength' ./config/qbftConfigFile.json >temp.json && mv temp.json ./config/qbftConfigFile.json
+
   # Ask user if they want to change the network IP configuration
   while [[ $advanced != "y" && $advanced != "n" ]]; do
-    read -p "Do you want to -- CHANGE THE ADVANCE CONFIGURATION -- ?  (Elliptic Curve, IP Address) Please enter 'y' or 'n': " advanced
+    read -p "Do you want to -- CHANGE THE ADVANCE CONFIGURATION -- ?  (Elliptic Curve, IP Address) [y/N]: " advanced
+    if [[ -z $advanced ]]; then advanced="n"; fi
     if [[ $advanced != "y" && $advanced != "n" ]]; then
       echo "Please enter 'y' or 'n'."
     fi
@@ -105,31 +153,40 @@ if [[ $default == "n" ]]; then
     ip=""
     ellipticCurve=""
     # Eliptic curve selection
-    while [[ $ellipticCurve != "secp256k1" && $ellipticCurve != "secp256r1" ]]; do
-      read -p "Enter the elliptic curve (secp256k1 or secp256r1): " ellipticCurve
-      if [[ $ellipticCurve != "secp256k1" && $ellipticCurve != "secp256r1" ]]; then
+    while true; do
+      read -p "Enter the elliptic curve (secp256k1 or secp256r1) [$ellipticCurve]: " ans
+      if [[ -z $ans ]]; then
+        break
+      fi
+      if [[ $ans == "secp256k1" || $ans == "secp256r1" ]]; then
+        ellipticCurve="$ans"
+        break
+      else
         echo "You must enter either 'secp256k1' or 'secp256r1'. Please try again."
       fi
     done
     jq --arg ec "$ellipticCurve" '.genesis.config.ecCurve = $ec' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
 
     # IP address mask input  
-    while [[ $ip == "" ]]; do
-      read -p "Enter the IP address mask (first 3 numbers, e.g. 172.16.240): " ip
-      
+    while true; do
+      read -p "Enter the IP address mask (first 3 numbers, e.g. 172.16.240) [$ip]: " ans
+      if [[ -z $ans ]]; then
+        break
+      fi
+
       # Validate format
-      if [[ ! $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      if [[ ! $ans =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo "You must enter a valid IP address mask. Please try again."
-        ip=""
         continue
       fi
 
       # Validate private range
-      if [[ ! $ip =~ ^10\.[0-9]+\.[0-9]+$ && ! $ip =~ ^172\.(1[6-9]|2[0-9]|3[0-1])\.[0-9]+$ && ! $ip =~ ^192\.168\.[0-9]+$ ]]; then
+      if [[ ! $ans =~ ^10\.[0-9]+\.[0-9]+$ && ! $ans =~ ^172\.(1[6-9]|2[0-9]|3[0-1])\.[0-9]+$ && ! $ans =~ ^192\.168\.[0-9]+$ ]]; then
         echo "The IP must be in a private range (10.x.x, 172.16-31.x, 192.168.x). Please try again."
-        ip=""
         continue
       fi
+      ip="$ans"
+      break
     done
     jq --arg ip "$ip" '.blockchain.nodes.ip = $ip' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
   fi
