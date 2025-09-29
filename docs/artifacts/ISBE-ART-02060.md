@@ -9,7 +9,7 @@
 | **Estado**| Borrador |
 | **Versión del documento**   | 0.1.2|
 | **Fecha** | 2025-08-20   |
-| **Repositorio** | *https://github.com/alastria/isbe-cliente*  |
+| **Repositorio** | *https://github.com/alastria/isbe-besu-local-deployer*  |
 | **Commit**| *6878417fa6e2eef2da0ea583612f423e0e58f0b0*   |
 
 ---
