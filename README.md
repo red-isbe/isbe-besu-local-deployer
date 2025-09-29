@@ -194,13 +194,6 @@ isbe-besu-local-deployer (branch: r1d1)
 - Noble Curves: Librería p256 integrada
 - Zero Gas Fee: Sin costo para desarrollo
 
-### Desarrollo DApps
-- Hardhat Integration: WSL optimizado
-- Web3 Compatibility: Librerías estándar
-- MetaMask Ready: Red personalizada configurable
-- Debugging: Logs, traces disponibles
-- WSL Support: Acceso nativo desde Windows
-
 ## TROUBLESHOOTING
 
 ### Error: secp256r1 no funciona
