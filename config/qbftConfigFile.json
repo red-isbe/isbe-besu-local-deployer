@@ -27,6 +27,9 @@
       "londonBlock": 0,
       "parisBlock": 0,
       "shanghaiBlock": 0,
+      "cancunBlock": 0,
+      "denebBlock": 0,
+      "pragueBlock": 0,
       "zeroBaseFee": true,
       "ecCurve": "secp256r1",
       "qbft": {

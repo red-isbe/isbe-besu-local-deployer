@@ -2,7 +2,7 @@
 data-path="/opt/besu/data"
 genesis-file="/opt/besu/config/genesis.json"
 logging="INFO"
-bootnodes=["enode://cb0c4a4a95b71e809a0a2c741630b6b0bf834a04273c4706abc935b7fee26f7f6314ab2e26297c34bec2c1327bea004738800c2308405907e21e73029397a88c@172.16.240.30:30303"]
+bootnodes=["enode://a86f018003b132185414ba1a81939c01f751210ef0f093e8a2cb3d15132ec8161d9908b5b124d695262203426460d203727d433e9426cd5add0309208a2230ca@172.16.240.30:30303"]
 
 rpc-http-enabled=true
 rpc-http-api=["ETH","NET","QBFT"]
