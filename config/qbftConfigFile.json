@@ -12,6 +12,8 @@
     "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "config": {
       "chainId": 2222,
+      "networkName": "r1d1",
+      "description": "ISBE Besu secp256r1 Network - Diamond Architecture Ready",
       "contractSizeLimit": 24576,
       "homesteadBlock": 0,
       "eip150Block": 0,
