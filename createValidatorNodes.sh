@@ -53,7 +53,7 @@ nodes_json="{\"name\": \"rpcnode\", \"client\": \"besu\", \"rpcUrl\": \"http://1
 
 # Remaining nodes as node1..nodeN-1
 if [ "$NUM_VALIDATORS" -ge 2 ]; then
-  for ((i = 3; i <= NUM_VALIDATORS; i++)); do
+  for ((i = 2; i <= NUM_VALIDATORS; i++)); do
     idx=$((i - 1))
     rpc_port=$((8545 + (i - 1)))
     entry="{\"name\": \"node$idx\", \"client\": \"besu\", \"rpcUrl\": \"http://127.0.0.1:$rpc_port\", \"privateTxUrl\": \"\"}"
