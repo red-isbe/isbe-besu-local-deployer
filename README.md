@@ -1,8 +1,8 @@
-# RED BESU secp256r1 "r1d1" - PRODUCCIÓN
+# RED BESU total secp256r1 "r1d1" 
 
 ## DESCRIPCIÓN
 
-Red Hyperledger Besu configurada para usar curva criptográfica **secp256r1 (NIST P-256)** en lugar de secp256k1. Test de despliegue de contratos Diamond ISBE exitosa.
+Red Hyperledger Besu configurada para usar curva criptográfica **secp256r1 (NIST P-256)** en lugar de secp256k1 totalmente funcional.
 
 ## ESTADO ACTUAL
 
