@@ -293,17 +293,7 @@ isbe-besu-local-deployer/
 - Smart Contracts: Solidity ^0.8.28 deployados
 - Diamond Architecture: 23 business logics sin fallos
 - EVM Features: Cancun/Deneb/Prague opcodes funcionando
-- Gas Estimation: Automática y perfecta
-- Event Emission: Capturados sin problemas
-- State Updates: Confirmadas en blockchain
-
-### Transacciones secp256r1
-- Firmas secp256r1: Verificadas por consenso
-- Recovery: Recuperación exacta de direcciones
-- RPC Calls: Todos los métodos ETH funcionando
-- Noble Curves: Librería p256 integrada
-- Zero Gas Fee: Sin costo para desarrollo
-
+- Gas Estimation: Automática 
 
 *Desarrollado y verificado por Fernando Lopez de SYM*
  
