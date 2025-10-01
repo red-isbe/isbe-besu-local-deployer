@@ -55,7 +55,10 @@ showInfo = true
 EOF
 ```
 
-## INSTALACIÓN
+## INSTALACIÓN Y USO
+
+### Nota importante sobre reinicio
+Esta red está optimizada para **instalación rápida**, no para reinicios parciales. El script `install.sh` regenera la red completa en ~30 segundos. Se recomienda mantener la red corriendo y usar `install.sh` cuando sea necesario reiniciar.
 
 ### 1. Clonar repositorio
 ```bash
@@ -64,20 +67,48 @@ cd isbe-besu-local-deployer
 git checkout r1d1
 ```
 
-### 2. Iniciar red
+### 2. Instalación y arranque
 ```bash
-# Limpiar instalación previa
-bash clean.sh
-
-# Instalar y configurar red secp256r1  
+# Instalar y levantar red secp256r1  
 bash install.sh
 
 # Responder 'n' para usar configuración por defecto
 ```
 
-### 3. Verificar estado
+### 3. Reinicio completo
+```bash
+# Limpiar y reinstalar (método recomendado)
+bash clean.sh
+bash install.sh
+```
+
+### 4. Comandos Docker directos (uso avanzado)
+```bash
+# Parar contenedores temporalmente
+docker stop bootnode node2 node3 node4
+
+# Reiniciar contenedores (puede requerir configuración adicional)
+docker start bootnode node2 node3 node4
+```
+
+### 5. Verificar estado
 ```bash
 # Verificar contenedores
+docker ps
+
+# Verificar conectividad
+curl -X POST --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' \
+     -H "Content-Type: application/json" http://localhost:8545
+
+# Resultado esperado: {"jsonrpc":"2.0","id":1,"result":"0x8ae"}
+```
+
+## SCRIPTS DISPONIBLES
+
+| Script | Función | Tiempo aprox |
+|--------|---------|--------------|
+| `install.sh` | Instalación completa | ~30 segundos |
+| `clean.sh` | Limpieza total | ~5 segundos |
 docker ps --filter "name=besu"
 
 # Verificar conectividad
@@ -165,16 +196,15 @@ const address = // derivar dirección desde public key
 
 ```
 isbe-besu-local-deployer (branch: r1d1)
-├── config/                      # Configuración de red R1
-│   ├── genesis.json             # Genesis generado con secp256r1
-│   ├── qbftConfigFile.json      # QBFT para R1  
-│   └── configValidators.toml    # Validadores R1
-├── QBFT-Network/               # Red desplegada
-├── keys_backup/                # Claves de validadores R1
-├── plugins/                    # Plugin Java secp256r1
-├── start-network-r1.sh        # Script inicio red R1
-├── clean.sh                    # Limpieza completa
-└── install.sh                  # Instalación automática
+├── config/                   # Configuración de red R1
+│   ├── genesis.json          # Genesis generado con secp256r1
+│   ├── qbftConfigFile.json   # QBFT para R1  
+│   └── configValidators.toml # Validadores R1
+├── QBFT-Network/            # Red desplegada (generada por install.sh)
+├── keys_backup/             # Claves de validadores R1
+├── plugins/                 # Plugin Java secp256r1
+├── install.sh               # Instalación y arranque
+└── clean.sh                 # Limpieza completa
 ```
 
 ## CASOS DE USO VERIFICADOS
@@ -194,6 +224,12 @@ isbe-besu-local-deployer (branch: r1d1)
 - Noble Curves: Librería p256 integrada
 - Zero Gas Fee: Sin costo para desarrollo
 
+### Desarrollo DApps
+- Web3 Compatibility: Librerías estándar
+- MetaMask Ready: Red personalizada configurable
+- Hardhat Integration: Configuración lista
+- Debugging: Logs y traces disponibles
+
 ## TROUBLESHOOTING
 
 ### Error: secp256r1 no funciona
@@ -212,10 +248,23 @@ grep -i secp256r1 config/genesis.json
 ```bash
 # Limpiar completamente
 bash clean.sh
-sudo docker system prune -f
+docker system prune -f
 
 # Reinstalar
 bash install.sh
+```
+
+### Error: Red no responde después de reiniciar
+```bash
+# Método recomendado: reinstalación limpia
+bash clean.sh
+bash install.sh
+
+# Método alternativo: reiniciar contenedores
+docker restart bootnode node2 node3 node4
+
+# Verificar logs si persiste el problema
+docker logs bootnode
 ```
 
 ### Error: No se puede conectar
