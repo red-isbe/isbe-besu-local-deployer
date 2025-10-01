@@ -5,14 +5,14 @@
 Red Hyperledger Besu configurada para usar curva criptográfica **secp256r1 (NIST P-256)** en lugar de secp256k1 totalmente funcional.
 
 ## ESTADO ACTUAL
-
+- **Nombre**: r1d1
 - **Red desplegada**: 4 nodos QBFT operativos
 - **Consenso**: QBFT Byzantine Fault Tolerance  
 - **Curva**: secp256r1 (NIST P-256) verificada
-- **Chain ID**: 2222 (r1d1)
+- **Chain ID**: 2222 
 - **EVM**: Cancun/Deneb/Prague activados
 - **Solidity**: Soporte ^0.8.28
-- **Arquitectura ISBE**: Diamond pattern completamente desplegable
+- **Arquitectura ISBE**: Contratos desplegables
 
 ## CONFIGURACIÓN TÉCNICA
 
