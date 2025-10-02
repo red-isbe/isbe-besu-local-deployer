@@ -137,6 +137,15 @@ This will create the explorer service in http://localhost:25000
 
 There you can see the blocks, transactions, and validators of your network.
 
+### ➡️ Node Information
+
+You can run the nodeInfo.sh script to see the information of the nodes in the network
+So you can see the enode, public key and address of each node.
+
+```bash
+bash nodeInfo.sh
+```
+
 Troubleshooting
 ---------------
 

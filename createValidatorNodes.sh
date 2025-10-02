@@ -48,14 +48,14 @@ echo "Generating $EXPLORER_CONFIG for $NUM_VALIDATORS validators"
 
 nodes_json=""
 
-# Node-1 as rpcnode
-nodes_json="{\"name\": \"rpcnode\", \"client\": \"besu\", \"rpcUrl\": \"http://127.0.0.1:8545\", \"privateTxUrl\": \"\"}"
+# Node-1 as bootnode
+nodes_json="{\"name\": \"bootnode\", \"client\": \"besu\", \"rpcUrl\": \"http://127.0.0.1:8545\", \"privateTxUrl\": \"\"}"
 
 # Remaining nodes as node1..nodeN-1
 if [ "$NUM_VALIDATORS" -ge 2 ]; then
-  for ((i = 2; i <= NUM_VALIDATORS; i++)); do
-    idx=$((i - 1))
-    rpc_port=$((8545 + (i - 1)))
+  for ((i = 1; i <= (NUM_VALIDATORS - 1); i++)); do
+    idx=$((i + 1))
+    rpc_port=$((8545 + i))
     entry="{\"name\": \"node$idx\", \"client\": \"besu\", \"rpcUrl\": \"http://127.0.0.1:$rpc_port\", \"privateTxUrl\": \"\"}"
     nodes_json="$nodes_json, $entry"
   done

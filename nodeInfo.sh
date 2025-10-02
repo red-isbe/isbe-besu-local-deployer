@@ -30,9 +30,9 @@ shorten_enode() {
   fi
 }
 
-echo "==============================================================="
-echo " Nodo            | Enode (p2p)                 | PubKey      | Address"
-echo "==============================================================="
+echo "==========================================================================================="
+echo " Nodo            | Enode (p2p)                           | PubKey          | Address"
+echo "==========================================================================================="
 
 for c in $CONTAINERS; do
   # Calcular puerto RPC en host de forma determinista (8545 bootnode, 8546 node2, ...)
@@ -57,11 +57,11 @@ for c in $CONTAINERS; do
 
   # Obtener la dirección del validador desde la node key (sin TTY)
   ADDRESS=$(docker exec -i "$c" besu public-key export-address \
-    --node-private-key-file=/opt/besu/data/key 2>/dev/null | tr -d '\r\n')
+    --node-private-key-file=/opt/besu/data/key 2>/dev/null | grep "^0x" | tail -1 | tr -d '\r\n')
 
   # Obtener la public key del nodo
   PUBKEY=$(docker exec -i "$c" besu public-key export \
-    --node-private-key-file=/opt/besu/data/key 2>/dev/null | tr -d '\r\n')
+    --node-private-key-file=/opt/besu/data/key 2>/dev/null | grep "^0x" | tail -1 | tr -d '\r\n')
 
   # Imprimir tabla
   sENODE=$(shorten_enode "$ENODE")
