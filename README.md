@@ -1,18 +1,19 @@
-# RED BESU total secp256r1 "r1d1" 
+# Hyperledger Besu secp256r1 Network Deployer
 
-## DESCRIPCIÓN
+Despliegue automatizado de red Hyperledger Besu QBFT con soporte nativo para curva criptográfica **secp256r1 (NIST P-256)** mediante Docker.
 
-Red Hyperledger Besu configurada para usar curva criptográfica **secp256r1 (NIST P-256)** en lugar de secp256k1 totalmente funcional.
+Este proyecto permite levantar rápidamente una blockchain privada configurable sin necesidad de instalar Besu localmente. Todos los parámetros (número de validadores, versión de Besu, Chain ID, tiempo de bloque, IP de red) pueden configurarse interactivamente o usar valores por defecto.
 
-## ESTADO ACTUAL
-- **Nombre**: r1d1
-- **Red desplegada**: 4 nodos QBFT operativos
-- **Consenso**: QBFT Byzantine Fault Tolerance  
-- **Curva**: secp256r1 (NIST P-256) verificada
-- **Chain ID**: 2222 
-- **EVM**: Cancun/Deneb/Prague activados
-- **Solidity**: Soporte ^0.8.28
-- **Arquitectura ISBE**: Contratos desplegables
+## CARACTERÍSTICAS
+
+- ✅ **Red desplegada**: 4 nodos QBFT operativos (configurable)
+- ✅ **Consenso**: QBFT Byzantine Fault Tolerance  
+- ✅ **Curva**: secp256r1 (NIST P-256) - **Soporte nativo en Besu 25.9.0**
+- ✅ **Chain ID**: 2222 (r1d1)
+- ✅ **EVM**: Cancun/Deneb/Prague activados desde bloque 0
+- ✅ **Solidity**: ^0.8.28 compatible
+- ✅ **Zero Base Fee**: Habilitado para desarrollo
+- ✅ **Arquitectura ISBE**: Diamond pattern completamente funcional
 
 ## CONFIGURACIÓN TÉCNICA
 
@@ -31,32 +32,61 @@ Red Hyperledger Besu configurada para usar curva criptográfica **secp256r1 (NIS
 }
 ```
 
-## REQUISITOS DEL SISTEMA
+## PRE-REQUISITOS
 
 ### Obligatorios
 
-**NSS Tools**
+🟡 **Docker y Docker-compose instalados**
+```bash
+# Verificar instalación
+docker --version          # Debe ser 20.10+
+docker-compose --version
+
+# Linux - Instalar Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Verificar que Docker está corriendo
+docker info
+```
+
+🟡 **jq instalado** (procesamiento JSON)
+```bash
+sudo apt-get install jq
+```
+
+🟡 **Docker corriendo**
+```bash
+# Iniciar Docker si está detenido
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+### Herramientas adicionales para secp256r1
+
+**NSS Tools** (Network Security Services)
 ```bash
 # Linux/Ubuntu
 sudo apt install libnss3-tools
 
 # macOS
 brew install nss
+
+# Verificar instalación
+certutil -h
 ```
 
-**Java 17+**
+**Java 17+** (para desarrollo/debugging)
 ```bash
 sdk install java 21.0.3-tem 
 sdk use java 21.0.3-tem
 java -version  # Verificar versión
 ```
 
-**Docker**
-```bash
-docker --version  # Debe ser 20.10+
-```
-
 ### Configuración NSS Database
+
 ```bash
 mkdir nssdb
 echo "test123" > nsspin.txt
@@ -72,167 +102,314 @@ showInfo = true
 EOF
 ```
 
-## INSTALACIÓN Y USO
+### Compatibilidad WSL (Windows)
 
-### Nota importante sobre reinicio
-Esta red está optimizada para **instalación rápida**, no para reinicios parciales. El script `install.sh` regenera la red completa en ~30 segundos.
-
-### 1. Clonar repositorio
+Si ejecutas en Windows bajo WSL, necesitas convertir los scripts primero:
 ```bash
-git clone <repository-url>
+sudo apt install dos2unix
+dos2unix *.sh config/*
+```
+
+## DESPLIEGUE
+
+Para desplegar y poner en marcha la red, simplemente ejecuta el script de instalación:
+
+```bash
+bash install.sh
+```
+
+✅ **¡Listo!**
+
+Para detener la red y limpiar completamente la instalación:
+
+```bash
+bash clean.sh
+```
+
+😎 **DONE**
+
+### Instalación paso a paso
+
+#### 1. Clonar repositorio
+```bash
+git clone https://github.com/alastria/isbe-besu-local-deployer.git
 cd isbe-besu-local-deployer
 git checkout r1d1
 ```
 
-### 2. Instalación y arranque
+#### 2. Instalación y arranque
 ```bash
 # Instalar y levantar red secp256r1  
 bash install.sh
 
-# Responder 'n' para usar configuración por defecto
+# Configuración interactiva:
+# - Responder 'n' para usar configuración por defecto
+# - Responder 'y' para personalizar número de nodos, chain ID, etc.
 ```
 
-### 3. Reinicio completo
+**Configuración por defecto:**
+- 4 nodos validadores
+- Besu 25.9.0 (con soporte secp256r1 nativo)
+- Curva elíptica: secp256r1
+- Chain ID: 2222
+- Tiempo de bloque: 2 segundos
+- Red IP: 172.16.240.0/24
+
+#### 3. Reinicio completo de la red
+
+Esta red está optimizada para **instalación rápida** (~30 segundos), no para reinicios parciales:
+
 ```bash
-# Limpiar y reinstalar (método recomendado)
+# Método recomendado: limpiar y reinstalar
 bash clean.sh
 bash install.sh
 ```
 
-### 4. Comandos Docker directos (uso avanzado)
+#### 4. Comandos Docker directos (uso avanzado)
+
 ```bash
 # Parar contenedores temporalmente
 docker stop bootnode node2 node3 node4
 
-# Reiniciar contenedores (puede requerir configuración adicional)
+# Reiniciar contenedores (puede requerir reconfiguración)
 docker start bootnode node2 node3 node4
+
+# Ver contenedores activos
+docker ps --filter "name=besu"
 ```
 
-### 5. Verificar estado
+## VERIFICACIÓN
+
+### Estado de la red
+
 ```bash
-# Verificar contenedores
+# Verificar contenedores Docker
 docker ps
 
-# Verificar conectividad
+# Resultado esperado: 4 contenedores (bootnode, node2, node3, node4)
+```
+
+### Conectividad RPC
+
+```bash
+# Verificar Chain ID
 curl -X POST --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' \
      -H "Content-Type: application/json" http://localhost:8545
 
-# Resultado esperado: {"jsonrpc":"2.0","id":1,"result":"0x8ae"}
-```
+# Resultado esperado: {"jsonrpc":"2.0","id":1,"result":"0x8ae"}  # 2222 en hex
 
-## SCRIPTS DISPONIBLES
+# Obtener número de bloque
+curl -X POST --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+     -H "Content-Type: application/json" http://localhost:8545
 
-| Script | Función | Tiempo aprox |
-|--------|---------|--------------|
-| `install.sh` | Instalación completa | ~30 segundos |
-| `clean.sh` | Limpieza total | ~5 segundos |
-docker ps --filter "name=besu"
-
-# Verificar conectividad
-```
-curl -X POST --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' \
+# Balance de cuenta prefunded
+curl -X POST --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x1a179f6dfcfaff34b4f045dd0d50a7b426233726","latest"],"id":1}' \
      -H "Content-Type: application/json" http://localhost:8545
 ```
 
+### Geth Console (opcional)
 
+**Instalación de Geth:**
+```bash
+# Linux/Ubuntu
+sudo apt-get install geth
 
-### qbftConfigFile.json 
+# macOS
+brew install geth
 ```
-{
-  "genesis": {
-    "nonce": "0x0",
-    "timestamp": "0x0",
-    "extraData": "0xf8a4a00000000000000000000000000000000000000000000000000000000000000000f87e94e4d2cced4cd6d9f963eeba9d0038b546e2376e6a94d60203fcd65cf1472ee22277dce9fb5fd41f171e946174365d69c09b040476ac6a76f5af4e469750d59403fab32bf53d712b7e3ba456a2d0d1ff1a6b054094a41af77b076d8c9d415cad1917e3cd9ce25b75d8949978504d6d370e6d0f1ef1fab1ac12ddbde4b186c080c0",
-    "gasLimit": "0x1fffffffffffff",
-    "gasUsed": "0x0",
-    "number": "0x0",
-    "difficulty": "0x1",
-    "coinbase": "0x0000000000000000000000000000000000000000",
-    "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-    "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-    "config": {
-      "chainId": 2222,
-      "networkName": "r1d1",
-      "description": "ISBE Besu secp256r1 Network - Diamond Architecture Ready",
-      "contractSizeLimit": 24576,
-      "homesteadBlock": 0,
-      "eip150Block": 0,
-      "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "eip155Block": 0,
-      "eip158Block": 0,
-      "byzantiumBlock": 0,
-      "constantinopleBlock": 0,
-      "petersburgBlock": 0,
-      "istanbulBlock": 0,
-      "muirglacierblock": 0,
-      "berlinBlock": 0,
-      "londonBlock": 0,
-      "parisBlock": 0,
-      "shanghaiBlock": 0,
-      "cancunBlock": 0,
-      "denebBlock": 0,
-      "pragueBlock": 0,
-      "zeroBaseFee": true,
-      "ecCurve": "secp256r1",
-      "qbft": {
-        "blockperiodseconds": 2,
-        "epochlength": 1000,
-        "requesttimeoutseconds": 2
-      },
-      "ellipticCurve": "secp256r1"
-    },
-    "alloc": {
-      "0xbebd29124435700f87a3821dc95eea8ab95fcb1b": {
-        "balance": "1000000000000000000000000000"
-      },
-      "0xcbac250151088ae5137039d4b0b10f0a8d55ea42": {
-        "balance": "1000000000000000000000000000"
-      },
-      "0x56db16fa6e201d894db6a158999eda03b94b4a7d": {
-        "balance": "1000000000000000000000000000"
-      },
-      "0x52b1f2380d94b25f1dece54b0cc8d8b1c5990cc8": {
-        "balance": "1000000000000000000000000000"
-      },
-      "0x19a005cf2ad7e7a88b41a9b8208b0c374123efdf": {
-        "balance": "1000000000000000000000000000"
-      },
-      "0xa58ede5c366a3398c6863325a83af2074990db5c": {
-        "balance": "1000000000000000000000000000"
-      },
-      "0x049bEe05040C428aB767d5582eEC159EB5a9de75": {
-        "balance": "1000000000000000000000000000"
-      },
-      "0x1a179f6dfcfaff34b4f045dd0d50a7b426233726": {
-        "balance": "1000000000000000000000000000",
-        "comment": "secp256r1 account for deployment"
-      },
-      "0xdB11FEfA99BfD167ace7D73057909Afe9b2068C0": {
-        "balance": "1000000000000000000000000000",
-        "comment": "secp256r1 account #2"
-      },
-      "0x6b5be277e2ddf8bbf6193205cb84cca3ab8576bc": {
-        "balance": "9000000000000000000000000000",
-        "comment": "secp256r1 account #3"
+
+**Conectar a la consola:**
+```bash
+geth attach http://localhost:8545
+```
+
+**Comandos útiles:**
+```javascript
+eth.chainId()
+eth.blockNumber
+eth.getTransactionFromBlock(555)
+web3.eth.getBalance("0x1a179f6dfcfaff34b4f045dd0d50a7b426233726", (err, balance) => { 
+  console.log(balance); 
+});
+web3.version
+admin.peers
+exit
+```
+
+## CONFIGURACIÓN AVANZADA
+
+### Pre-funding cuentas personalizadas
+
+Si deseas añadir cuentas con balance inicial, edita `config/qbftConfigFile.json` **ANTES** de ejecutar `install.sh`:
+
+```json
+"alloc": {
+  "0x1234567890abcdef1234567890abcdef12345678": {
+    "balance": "1000000000000000000000000000",
+    "comment": "Mi cuenta personalizada"
+  }
+}
+```
+
+### Plugins de Besu (opcional)
+
+Para usar plugins personalizados:
+
+1. **Añade el JAR** al directorio `plugins/`:
+```bash
+cp tu-plugin.jar plugins/
+```
+
+2. **El plugin se montará automáticamente** en los contenedores Besu en `/opt/besu/plugins`
+
+3. **Verifica que el plugin se cargó:**
+```bash
+docker logs bootnode | grep -i plugin
+
+# Output esperado:
+# Plugin Registration Summary:
+# Registered Plugins:
+#  - YourPlugin (your-plugin/1.0.0)
+# TOTAL = 1 of 1 plugins successfully registered.
+```
+
+**Ejemplo de plugin disponible:**
+```
+plugins/hello-plugin/    # Plugin de ejemplo (no necesario para secp256r1)
+```
+
+### Parámetros configurables en install.sh
+
+Durante la instalación interactiva puedes configurar:
+
+| Parámetro | Valor por defecto | Descripción |
+|-----------|-------------------|-------------|
+| Número de validadores | 4 | Nodos QBFT validadores |
+| Versión Besu | 25.9.0 | **Requerido para secp256r1** |
+| Curva elíptica | secp256r1 | secp256k1 o secp256r1 |
+| Chain ID | 2222 | Identificador de la red |
+| Block time | 2s | Tiempo entre bloques |
+| Network IP | 172.16.240.0/24 | Subred Docker |
+
+## SOPORTE secp256r1
+
+### ⚠️ IMPORTANTE: Versión de Besu
+
+El soporte para **secp256r1 (NIST P-256)** está **integrado nativamente** en **Hyperledger Besu 25.9.0+**.
+
+**NO se requiere ningún plugin externo.** El soporte viene incluido en:
+
+1. **Hyperledger Besu 25.9.0** - Versión con soporte R1 built-in
+2. **Genesis Configuration** - Activación mediante `"ecCurve": "secp256r1"`
+3. **NSS Libraries** - Funciones criptográficas NIST P-256
+
+### Stack tecnológico secp256r1
+
+```
+┌─────────────────────────────────────────┐
+│  Hyperledger Besu 25.9.0+               │ ← Soporte nativo secp256r1
+│  (Docker: hyperledger/besu:25.9.0)      │
+├─────────────────────────────────────────┤
+│  NSS Libraries (libnss3-tools)          │ ← Criptografía NIST P-256
+├─────────────────────────────────────────┤
+│  Genesis Config                         │ ← "ecCurve": "secp256r1"
+│  (qbftConfigFile.json)                  │
+└─────────────────────────────────────────┘
+```
+
+### Verificación de secp256r1
+
+```bash
+# 1. Verificar que Besu 25.9.0 está en uso
+docker exec bootnode besu --version
+# Output: besu/v25.9.0/...
+
+# 2. Verificar curva en el genesis generado
+jq '.config.ecCurve' QBFT-Network/networkFiles/genesis.json
+# Output: "secp256r1"
+
+# 3. Ver logs de validación de curva
+docker logs bootnode | grep -i "secp256r1\|elliptic"
+```
+
+### Librería de firmas secp256r1
+
+**Repositorio**: [isbe-cliente-firmas-secp256r1](https://github.com/alastria/isbe-cliente-firmas-secp256r1/tree/javascript-library/library-javascript)
+
+La librería `Secp256r1Wallet.js` está disponible en el repositorio **isbe-contracts** y proporciona:
+
+- ✅ Soporte nativo secp256r1 en JavaScript/TypeScript
+- ✅ Compatible con Besu R1
+- ✅ Firma de transacciones verificada
+- ✅ Deploy de contratos funcional
+- ✅ Basada en `@noble/curves` (p256)
+
+## CONFIGURACIÓN DE RED
+
+### Parámetros principales
+
+| Parámetro | Valor | Descripción |
+|-----------|-------|-------------|
+| **RPC URL** | http://127.0.0.1:8545 | Endpoint JSON-RPC del bootnode |
+| **Chain ID** | 2222 (0x8ae) | Identificador único de la red r1d1 |
+| **Network Name** | r1d1 | Nombre de la red |
+| **Consensus** | QBFT | Byzantine Fault Tolerance |
+| **Block Time** | 2 segundos | Tiempo entre bloques |
+| **Gas Price** | 0 | Sin costo de gas (desarrollo) |
+| **Gas Limit** | 0x1fffffffffffff | Prácticamente ilimitado |
+| **Elliptic Curve** | secp256r1 | NIST P-256 |
+| **EVM Version** | Cancun/Deneb/Prague | Activado desde bloque 0 |
+| **Solidity** | ^0.8.28 | Versión compatible |
+
+### Cuentas pre-funded
+
+La red incluye varias cuentas con balance inicial (ejemplo):
+
+```javascript
+// Account secp256r1 para deployment
+address: "0x1a179f6dfcfaff34b4f045dd0d50a7b426233726"
+balance: "1000000000000000000000000000" // 1 billion ETH
+
+// Account secp256r1 #3 (main)
+address: "0x6b5be277e2ddf8bbf6193205cb84cca3ab8576bc"
+balance: "9000000000000000000000000000" // 9 billion ETH
+```
+
+Ver todas las cuentas en `config/qbftConfigFile.json` sección `alloc`.
+
+### Configuración Hardhat
+
+```javascript
+// hardhat.config.js
+module.exports = {
+  networks: {
+    r1d1: {
+      url: "http://127.0.0.1:8545",
+      chainId: 2222,
+      gasPrice: 0,
+      blockGasLimit: 0x1fffffffffffff,
+      timeout: 60000,
+      accounts: {
+        mnemonic: "tu mnemonic aquí"
       }
     }
   },
-  "blockchain": {
-    "nodes": {
-      "generate": true,
-      "count": 4
+  solidity: {
+    version: "0.8.28",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
     }
   }
-}
-
-
+};
 ```
 
-
-
-## ARQUITECTURA DIAMOND ISBE DESPLEGADA
+## ARQUITECTURA DIAMOND ISBE
 
 ### Deploy exitoso confirmado
+
 ```
 Total duration: 315921ms (315.92s)
 Signature curve: secp256r1
@@ -242,6 +419,7 @@ Use cases: 4 successful, 0 failed
 ```
 
 ### Contratos desplegados (pruebas en local)
+
 | Use Case | Type | Address |
 |----------|------|---------|
 | ERC20 Complete | Erc20 | 0x4e7ccaD4E283bf451934A3f07cA29828E2CDB8fD |
@@ -249,20 +427,24 @@ Use cases: 4 successful, 0 failed
 | ERC721 | Erc721 | 0xA65f82248F6fB44B2A6F80f5361657caa792eB74 |
 | Hash Timestamp | Hash_timestamp | 0x47015DA2f9A58b29C063406C860b33D0e807fc41 |
 
-## LIBRERÍAS SECP256R1:
+### Casos de uso verificados
 
-1. **Repositorio**: [isbe-cliente-firmas-secp256r1](https://github.com/alastria/isbe-cliente-firmas-secp256r1/tree/javascript-library/library-javascript)
-
-2. **Librería Secp256r1Wallet.js en isbe-contracts ya disponible para despliegue desde hardhat**
-
+- ✅ Smart Contracts Solidity ^0.8.28 deployados exitosamente
+- ✅ Diamond Architecture: 23 business logics sin fallos
+- ✅ EVM Features: Cancun/Deneb/Prague opcodes funcionando
+- ✅ Gas Estimation: Automática y precisa
+- ✅ Event Emission: Capturados correctamente
+- ✅ Firmas secp256r1: Verificadas por consenso QBFT
+- ✅ Recovery: Recuperación exacta de direcciones
+- ✅ Zero Gas Fee: Sin costo para desarrollo
 
 ## ESTRUCTURA DEL PROYECTO
 
 ```
 isbe-besu-local-deployer/
 ├── config/
-│   ├── configBootnode.toml          # Config bootnode
-│   ├── configValidators.toml        # Config validadores
+│   ├── configBootnode.toml          # Configuración bootnode
+│   ├── configValidators.toml        # Configuración validadores
 │   ├── qbftConfigFile.json          # Configuración QBFT secp256r1
 │   └── qbftConfigFile.json.backup   # Backup configuración
 ├── QBFT-Network/                    # Red desplegada (generada por install.sh)
@@ -271,7 +453,7 @@ isbe-besu-local-deployer/
 │   ├── enode_keys/                  # Claves enodes
 │   └── validator_keys/              # Claves secp256r1 validadores
 ├── plugins/
-│   └── hello-plugin/                # Plugin Java secp256r1
+│   └── hello-plugin/                # Plugin ejemplo (no requerido para R1)
 ├── docs/
 │   ├── artifacts/                   # Artefactos ISBE
 │   ├── besu-docs.md                 # Documentación Besu
@@ -279,21 +461,71 @@ isbe-besu-local-deployer/
 │   ├── noble-curves.md              # Noble curves
 │   ├── noble-hashes.md              # Noble hashes
 │   └── RECOMENDACIONES-DEPLOY.md    # Guía técnica deploy
-├── createValidatorNodes.sh          # Generación nodos
-├── getEnode.sh                      # Obtener enodes
-├── moveKeys.sh                      # Mover claves
-├── install.sh                       # Instalación y arranque
-├── clean.sh                         # Limpieza completa
+├── createValidatorNodes.sh          # Generación nodos validadores
+├── getEnode.sh                      # Obtener enodes de nodos
+├── moveKeys.sh                      # Mover claves entre directorios
+├── install.sh                       # Script principal de instalación
+├── clean.sh                         # Limpieza completa de la red
 └── README.md                        # Este archivo
 ```
 
-## CASOS DE USO VERIFICADOS
+## SCRIPTS DISPONIBLES
 
-### Deploy de contratos
-- Smart Contracts: Solidity ^0.8.28 deployados
-- Diamond Architecture: 23 business logics sin fallos
-- EVM Features: Cancun/Deneb/Prague opcodes funcionando
-- Gas Estimation: Automática 
+| Script | Función | Tiempo aprox |
+|--------|---------|--------------|
+| `install.sh` | Instalación completa de la red | ~30 segundos |
+| `clean.sh` | Limpieza total (contenedores, volúmenes, datos) | ~5 segundos |
+| `createValidatorNodes.sh` | Crea nodos validadores QBFT | Llamado por install.sh |
+| `getEnode.sh` | Obtiene enode URLs de los nodos | Uso manual |
+| `moveKeys.sh` | Mueve claves de validadores | Uso manual |
 
-*Desarrollado y verificado por Fernando Lopez de SYM*
+## TROUBLESHOOTING
+
+### Red no levanta
+
+```bash
+# 1. Verificar Docker está corriendo
+docker info
+
+# 2. Limpiar y reintentar
+bash clean.sh
+bash install.sh
+```
+
+### Errores de conexión WSL
+
+```bash
+# Convertir line endings
+dos2unix *.sh config/*
+```
+
+### Ver logs de un nodo
+
+```bash
+docker logs bootnode
+docker logs node2
+docker logs node3
+docker logs node4
+
+# Seguir logs en tiempo real
+docker logs -f bootnode
+```
+
+### Problemas de puertos
+
+```bash
+# Verificar que puertos 8545-8549 están libres
+netstat -tulpn | grep 854
+
+# Liberar puerto si está en uso
+sudo fuser -k 8545/tcp
+```
+
+---
+
+**Desarrollado y verificado por Fernando Lopez de SYM**  
+**Arquitectura ISBE implementada con soporte Solidity ^0.8.28**
+
+*Basado en el proyecto [Besu Docker Deployer](https://github.com/alastria/besu-docker-deployer)*
+
  

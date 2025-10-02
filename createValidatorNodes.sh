@@ -33,7 +33,6 @@ for ((i = 2; i <= NUM_VALIDATORS; i++)); do
   docker run -d --name $NODE_NAME \
     -v "$(pwd)/config:/opt/besu/config" \
     -v "$(pwd)/QBFT-Network/Node-$i/data:/opt/besu/data" \
-    -v "$(pwd)/plugins:/opt/besu/plugins" \
     -p $P2P_PORT:$P2P_PORT \
     -p $RPC_PORT:$RPC_PORT \
     -p $METRICS_PORT:$METRICS_PORT \

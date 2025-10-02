@@ -276,7 +276,6 @@ cd ..
 docker run -d --name bootnode \
   -v "$(pwd)/config:/opt/besu/config" \
   -v "$(pwd)/QBFT-Network/Node-1/data:/opt/besu/data" \
-  -v "$(pwd)/plugins:/opt/besu/plugins" \
   -p 30303:30303 \
   -p 8545:8545 \
   -p 9545:9545 \
