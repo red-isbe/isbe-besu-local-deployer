@@ -3,7 +3,7 @@ export type QuorumNode = {
   client: string;
   rpcUrl: string;
   privateTxUrl: string;
-  privateKey: string;
+  privateKey?: string; // Hacer opcional ya que no siempre está presente
   accountAddress: string;
 };
 

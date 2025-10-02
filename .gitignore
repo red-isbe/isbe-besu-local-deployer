@@ -12,3 +12,5 @@ node_modules/
 # Ignorar el contenido de QBFT-Network, pero mantiene el directorio
 /QBFT-Network/*
 !/QBFT-Network/.gitkeep
+
+extradata.txt

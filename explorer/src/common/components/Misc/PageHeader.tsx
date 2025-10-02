@@ -19,10 +19,31 @@ interface IProps {
   config: QuorumConfig;
   selectNodeHandler: any;
   isLoading?: boolean;
+  activeValidators?: string[]; // Lista de validadores activos
 }
 
 export default function PageHeader(props: IProps) {
-  const nodeKeys: string[] = getNodeKeys(props.config);
+  // Filtrar nodos basándose en validadores activos
+  const getAvailableNodes = (): string[] => {
+    if (!props.activeValidators || props.activeValidators.length === 0) {
+      // Si no hay validadores activos disponibles, mostrar todos los nodos
+      return getNodeKeys(props.config);
+    }
+    
+    // Filtrar solo los nodos que son validadores activos
+    const activeNodes = props.config.nodes
+      .filter(node => 
+        node.accountAddress && props.activeValidators!.some(validator => 
+          validator.toLowerCase() === node.accountAddress.toLowerCase()
+        )
+      )
+      .map(node => node.name);
+    
+    // Si no hay nodos activos, mostrar al menos el primer nodo como fallback
+    return activeNodes.length > 0 ? activeNodes : [props.config.nodes[0].name];
+  };
+
+  const availableNodes: string[] = getAvailableNodes();
 
   return (
     <>
@@ -51,7 +72,7 @@ export default function PageHeader(props: IProps) {
                 variant="filled"
                 onChange={props.selectNodeHandler}
               >
-                {nodeKeys.map((node) => (
+                {availableNodes.map((node) => (
                   <option key={node} value={node}>
                     {node}
                   </option>

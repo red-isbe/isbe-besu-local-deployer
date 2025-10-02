@@ -7,6 +7,8 @@ import {
   Box,
   Center,
   Skeleton,
+  Badge,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import axios from "axios";
@@ -23,12 +25,23 @@ interface IProps {
   config: QuorumConfig;
   minersList: string[];
   selectedNode: string;
+  blacklistedValidators: string[];
+  nodeAddress: string;
 }
 
 export default function ValidatorsActive(props: IProps) {
   const [buttonLoading, setButtonLoading] = useState<buttonState>({});
+  
+  // Verificar si el nodo actual está en la lista negra
+  const isCurrentNodeBlacklisted = props.blacklistedValidators.includes(props.nodeAddress.toLowerCase());
+
   const handleClick = async (e: any, index: number) => {
-    // console.log(e);
+    // Verificar si el nodo actual está bloqueado
+    if (isCurrentNodeBlacklisted) {
+      console.error("Este validador ha sido expulsado y no puede proponer cambios");
+      return;
+    }
+
     setButtonLoading({ [index]: true });
     const needle: QuorumNode = getDetailsByNodeName(
       props.config,
@@ -49,6 +62,7 @@ export default function ValidatorsActive(props: IProps) {
         algorithm: props.config.algorithm,
         address: e,
         vote: false,
+        proposerAddress: props.nodeAddress,
       }),
       baseURL: `${publicRuntimeConfig.QE_BASEPATH}`,
       timeout: 2000,
@@ -59,8 +73,11 @@ export default function ValidatorsActive(props: IProps) {
         }
       })
       .catch((err) => {
-        if (err.status === 401) {
-          console.error(`${err.status} Unauthorized`);
+        console.error(err);
+        if (err.response?.status === 403) {
+          console.error(err.response.data.message || "No tienes permisos para realizar esta acción");
+        } else if (err.response?.status === 401) {
+          console.error("No autorizado");
         }
       });
 
@@ -85,6 +102,7 @@ export default function ValidatorsActive(props: IProps) {
         </Center>
         {props.minersList !== undefined && props.minersList.length > 0 ? (
           props.minersList.map((miner, i) => {
+            const isBlacklisted = props.blacklistedValidators.includes(miner.toLowerCase());
             return (
               <>
                 <MotionFlex
@@ -95,17 +113,29 @@ export default function ValidatorsActive(props: IProps) {
                   justifyContent="center"
                   alignItems="center"
                 >
-                  <Text>{miner}</Text>
+                  <Box flex="1">
+                    <Text>{miner}</Text>
+                    {isBlacklisted && (
+                      <Badge colorScheme="red" ml={2}>
+                        Expulsado
+                      </Badge>
+                    )}
+                  </Box>
                   <Spacer key={i} />
-                  <Button
-                    // bgColor="red.400"
-                    colorScheme="red"
-                    isLoading={buttonLoading[i] ? true : false}
-                    loadingText="Removing..."
-                    onClick={() => handleClick(miner, i)}
+                  <Tooltip 
+                    label={isCurrentNodeBlacklisted ? "No puedes votar porque has sido expulsado" : ""} 
+                    isDisabled={!isCurrentNodeBlacklisted}
                   >
-                    Remove
-                  </Button>
+                    <Button
+                      colorScheme="red"
+                      isLoading={buttonLoading[i] ? true : false}
+                      loadingText="Removing..."
+                      onClick={() => handleClick(miner, i)}
+                      isDisabled={isCurrentNodeBlacklisted}
+                    >
+                      Remove
+                    </Button>
+                  </Tooltip>
                 </MotionFlex>
               </>
             );

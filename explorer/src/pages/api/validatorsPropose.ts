@@ -3,6 +3,36 @@ import apiAuth from "../../common/lib/authentication";
 import { ethApiCall } from "../../common/lib/ethApiCall";
 import { ConsensusAlgorithms, Clients } from "../../common/types/Validator";
 
+// Temporalmente comentado para debugging
+// import fs from 'fs';
+// import path from 'path';
+
+// const getBlacklistedValidators = (): Set<string> => {
+//   try {
+//     const filePath = path.join(process.cwd(), 'data', 'blacklisted-validators.json');
+//     if (fs.existsSync(filePath)) {
+//       const data = fs.readFileSync(filePath, 'utf8');
+//       return new Set(JSON.parse(data));
+//     }
+//   } catch (error) {
+//     console.error('Error reading blacklisted validators:', error);
+//   }
+//   return new Set();
+// };
+
+// const saveBlacklistedValidators = (blacklisted: Set<string>) => {
+//   try {
+//     const dataDir = path.join(process.cwd(), 'data');
+//     if (!fs.existsSync(dataDir)) {
+//       fs.mkdirSync(dataDir, { recursive: true });
+//     }
+//     const filePath = path.join(dataDir, 'blacklisted-validators.json');
+//     fs.writeFileSync(filePath, JSON.stringify(Array.from(blacklisted), null, 2));
+//   } catch (error) {
+//     console.error('Error saving blacklisted validators:', error);
+//   }
+// };
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

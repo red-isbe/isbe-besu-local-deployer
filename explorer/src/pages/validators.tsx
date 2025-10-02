@@ -3,7 +3,7 @@ import { GetServerSideProps } from "next";
 import type { Session } from "next-auth";
 import { useSession, getSession } from "next-auth/react";
 import AccessDenied from "../common/components/Misc/AccessDenied";
-import { Divider, Container, SimpleGrid } from "@chakra-ui/react";
+import { Divider, Container, SimpleGrid, Alert, AlertIcon, AlertTitle, AlertDescription, Box } from "@chakra-ui/react";
 import PageHeader from "../common/components/Misc/PageHeader";
 import axios from "axios";
 import { QuorumConfig, QuorumNode } from "../common/types/QuorumConfig";
@@ -22,6 +22,8 @@ interface IState {
   rpcUrl: string;
   minersList: string[];
   pendingList: string[];
+  blacklistedValidators: string[];
+  nodeAddress: string;
 }
 
 interface IProps {
@@ -40,6 +42,8 @@ export default function Validators({ config }: IProps) {
     rpcUrl: config.nodes[0].rpcUrl,
     minersList: [],
     pendingList: [],
+    blacklistedValidators: [],
+    nodeAddress: "",
   });
 
   const nodeInfoHandler = useCallback(async (node: string) => {
@@ -81,6 +85,8 @@ export default function Validators({ config }: IProps) {
           rpcUrl: needle.rpcUrl,
           minersList: currentVal.data.validators,
           pendingList: pendingVal.data.validators,
+          blacklistedValidators: [], // Por ahora mantener vacío
+          nodeAddress: "", // Por ahora mantener vacío
         });
       })
       .catch((err) => {
@@ -92,6 +98,8 @@ export default function Validators({ config }: IProps) {
           rpcUrl: needle.rpcUrl,
           minersList: [],
           pendingList: [],
+          blacklistedValidators: [],
+          nodeAddress: "",
         });
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,10 +118,61 @@ export default function Validators({ config }: IProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validators.selectedNode]);
 
+  // Verificar si el nodo seleccionado sigue siendo válido cuando cambie la lista de validadores
+  useEffect(() => {
+    if (!isSelectedNodeValid()) {
+      console.log("El nodo seleccionado ya no es un validador activo, cambiando a un nodo válido...");
+      selectValidNode();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validators.minersList]);
+
+  // Verificar si algún nodo ha sido expulsado recientemente
+  const getExpelledNodes = () => {
+    return config.nodes.filter(node => 
+      node.accountAddress && !validators.minersList.some(validator => 
+        validator.toLowerCase() === node.accountAddress.toLowerCase()
+      )
+    );
+  };
+
   const handleSelectNode = (e: any) => {
     controller.abort();
     clearInterval(intervalRef.current as NodeJS.Timeout);
     setValidators({ ...validators, selectedNode: e.target.value });
+  };
+
+  // Función para verificar si el nodo seleccionado es válido
+  const isSelectedNodeValid = () => {
+    if (validators.minersList.length === 0) {
+      return true; // Si no hay validadores cargados aún, asumir que es válido
+    }
+    
+    const selectedNodeDetails = config.nodes.find(node => node.name === validators.selectedNode);
+    if (!selectedNodeDetails || !selectedNodeDetails.accountAddress) {
+      return true; // Si no tiene accountAddress, asumir que es válido para evitar errores
+    }
+    
+    return validators.minersList.some(validator => 
+      validator.toLowerCase() === selectedNodeDetails.accountAddress.toLowerCase()
+    );
+  };
+
+  // Función para seleccionar automáticamente un nodo válido
+  const selectValidNode = () => {
+    if (validators.minersList.length === 0) {
+      return; // No hacer nada si no hay validadores cargados
+    }
+    
+    const validNode = config.nodes.find(node => 
+      node.accountAddress && validators.minersList.some(validator => 
+        validator.toLowerCase() === node.accountAddress.toLowerCase()
+      )
+    );
+    
+    if (validNode && validNode.name !== validators.selectedNode) {
+      setValidators({ ...validators, selectedNode: validNode.name });
+    }
   };
   if (typeof window !== "undefined" && loading) return null;
   if (isAuthEnabled && !session) {
@@ -126,7 +185,24 @@ export default function Validators({ config }: IProps) {
           title="Validators"
           config={config}
           selectNodeHandler={handleSelectNode}
+          activeValidators={validators.minersList}
         />
+        
+        {/* Mostrar alerta para nodos expulsados */}
+        {validators.minersList.length > 0 && getExpelledNodes().length > 0 && (
+          <Alert status="warning" mt={4}>
+            <AlertIcon />
+            <Box>
+              <AlertTitle>Nodos Expulsados Detectados</AlertTitle>
+              <AlertDescription>
+                Los siguientes nodos han sido expulsados de la red de validadores: {' '}
+                {getExpelledNodes().map(node => node.name).join(', ')}. 
+                Estos nodos ya no aparecen en el selector de nodos.
+              </AlertDescription>
+            </Box>
+          </Alert>
+        )}
+        
         <Divider my={8} />
         <SimpleGrid columns={2} minChildWidth="600px">
           <ValidatorsAbout />
@@ -134,10 +210,14 @@ export default function Validators({ config }: IProps) {
             config={config}
             minersList={validators.minersList}
             selectedNode={validators.selectedNode}
+            blacklistedValidators={validators.blacklistedValidators}
+            nodeAddress={validators.nodeAddress}
           />
           <ValidatorsPropose
             config={config}
             selectedNode={validators.selectedNode}
+            blacklistedValidators={validators.blacklistedValidators}
+            nodeAddress={validators.nodeAddress}
           />
           <ValidatorsPending
             config={config}

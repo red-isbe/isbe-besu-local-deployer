@@ -166,7 +166,16 @@ docker container prune
 docker network prune
 ```
 
-- If you want to see which validators contains the extradata field in genesis.json, set that fiel in a extradata.txt in your PWD (just the 0x in your file)
+- If you want to see which validators contains the extradata field in genesis.json
+
+First set that field in a extradata.txt in your PWD (just the 0x in your file):
+
+```bash
+curl -s -X POST http://localhost:8545 -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["160", false],"id":1}' | jq -r '.result.extraData' > extradata.txt
+```
+
+Then decode it with besu docker image (you can change the version if you want):
+
 ```bash
 docker run --rm -v "$(pwd):/opt/besu/data" hyperledger/besu:24.12.2 rlp decode --from=/opt/besu/data/extradata.txt --type=QBFT_EXTRA_DATA
 ```

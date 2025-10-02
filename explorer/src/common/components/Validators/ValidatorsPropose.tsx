@@ -7,6 +7,10 @@ import {
   Input,
   Box,
   Button,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from "@chakra-ui/react";
 import { QuorumConfig, QuorumNode } from "../../types/QuorumConfig";
 import axios from "axios";
@@ -20,6 +24,8 @@ const MotionBox = motion(Box);
 interface IProps {
   config: QuorumConfig;
   selectedNode: string;
+  blacklistedValidators: string[];
+  nodeAddress: string;
 }
 
 interface IState {
@@ -31,10 +37,21 @@ export default function ValidatorsPropose(props: IProps) {
     address_input: "",
   });
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [error, setError] = useState<string>("");
+
+  // Verificar si el nodo actual está en la lista negra
+  const isCurrentNodeBlacklisted = props.blacklistedValidators.includes(props.nodeAddress.toLowerCase());
 
   const handleClick = async (e: any) => {
     e.preventDefault();
-    // console.log(e);
+    setError("");
+    
+    // Temporalmente comentado para debugging
+    // if (isCurrentNodeBlacklisted) {
+    //   setError("Este validador ha sido expulsado y no puede proponer cambios");
+    //   return;
+    // }
+
     setButtonLoading(true);
     const needle: QuorumNode = getDetailsByNodeName(
       props.config,
@@ -62,6 +79,7 @@ export default function ValidatorsPropose(props: IProps) {
       .then((res) => {
         if (res.status === 200) {
           console.log("Successfully proposed: " + propose.address_input);
+          setPropose({ address_input: "" }); // Limpiar el campo
         }
       })
       .catch((err) => {
@@ -69,7 +87,6 @@ export default function ValidatorsPropose(props: IProps) {
           console.error(`${err.status} Unauthorized`);
         }
       });
-    // console.log(addValidator);
 
     setButtonLoading(false);
   };
@@ -96,6 +113,9 @@ export default function ValidatorsPropose(props: IProps) {
             Propose Validator
           </Heading>
         </Center>
+        
+
+
         <FormControl as="form" onSubmit={handleClick}>
           <FormLabel htmlFor="address">Address</FormLabel>
           <Input mb={3} id="address" type="text" onChange={handleInput} />

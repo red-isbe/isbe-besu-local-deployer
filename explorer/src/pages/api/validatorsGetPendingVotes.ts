@@ -38,9 +38,14 @@ export default async function handler(
     );
     const listOfCandidates = res.data.result;
     if (Object.keys(listOfCandidates).length !== 0) {
-      Object.entries(listOfCandidates).map((values) =>
-        pendingVotes.push(values)
-      );
+      Object.entries(listOfCandidates)
+        .filter(([address]) => 
+          // Filtrar direcciones inválidas o corruptas
+          address !== "0x0000000000000000000000000000000000000000" && 
+          address.length === 42 && 
+          address.startsWith("0x")
+        )
+        .map((values) => pendingVotes.push(values));
     }
     status = { error: res.status, validators: pendingVotes };
   } catch (e) {
