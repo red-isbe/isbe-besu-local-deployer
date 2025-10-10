@@ -34,6 +34,11 @@ To deploy and make it work, simply run the installation script (you may review i
 bash install.sh      
 ```
 
+For non conversational (batch mode) it is possible to avoid prompting. It uses default configuration 
+```bash
+bash install.sh -b [--batch]
+```
+
 Ready ✅
 
 To stop the network and clean the installation just run:

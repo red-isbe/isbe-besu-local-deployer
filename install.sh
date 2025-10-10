@@ -43,14 +43,28 @@ def_besuVersion="$besuVersion"
 def_ip="$ip"
 
 
-# Ask user if they want to change the default configuration
-while [[ $default != "y" && $default != "n" ]]; do
-  read -p "Do you want to -- APPLY THIS CONFIGURATION ? [default enter key value] --  (validators nodes: $num_nodes, Besu version: $besuVersion, Elliptic Curve: $ellipticCurve, chainId: $chainId, sec between blocks: $blockperiodseconds, epoch length: $epochlength, IP: $ip) [Y/n]: " default
-  if [[ -z $default ]]; then default="y"; fi
-  if [[ $default != "y" && $default != "n" ]]; then
-    echo "Please enter 'y' or 'n'."
+# --- New: parse -y / --yes to skip prompts and apply defaults ---
+auto_yes=false
+for arg in "$@"; do
+  if [[ "$arg" == "-b" || "$arg" == "--batch" ]]; then
+    auto_yes=true
+    default="y"
+    break
   fi
 done
+
+# Ask user if they want to change the default configuration
+if [ "$auto_yes" = true ]; then
+  echo "Auto-confirmation enabled (-y): applying default configuration..."
+else
+  while [[ $default != "y" && $default != "n" ]]; do
+    read -p "Do you want to -- APPLY THIS CONFIGURATION ? [default enter key value] --  (validators nodes: $num_nodes, Besu version: $besuVersion, Elliptic Curve: $ellipticCurve, chainId: $chainId, sec between blocks: $blockperiodseconds, epoch length: $epochlength, IP: $ip) [Y/n]: " default
+    if [[ -z $default ]]; then default="y"; fi
+    if [[ $default != "y" && $default != "n" ]]; then
+      echo "Please enter 'y' or 'n'."
+    fi
+  done
+fi
 
 # Update genesis file with default chainId and block period
 jq --argjson chainId "$chainId" '.genesis.config.chainId = $chainId' ./config/qbftConfigFile.json >temp.json && mv temp.json ./config/qbftConfigFile.json
