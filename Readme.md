@@ -28,15 +28,16 @@ There is a [Troubleshooting section](#troubleshooting) also if you have some pro
 
 ### DEPLOYMENT
 
-To deploy and make it work, simply run the installation script (you may review it beforehand if you wish): 🙋🏻‍♂️
+To deploy and make it work for conversational mode, simply run the installation script (you may review it beforehand if you wish): 🙋🏻‍♂️
 
 ```bash
 bash install.sh      
 ```
 
-For non conversational (batch mode) it is possible to avoid prompting. It uses default configuration 
+For NO conversational (batch mode) it is possible to avoid prompting. It uses default configuration.
+You can run the installer non-interactively with the `-b` or `--batch` flag:
 ```bash
-bash install.sh -b [--batch]
+bash install.sh -b
 ```
 
 Ready ✅
