@@ -1,33 +1,6 @@
 {
   "algorithm": "qbft",
   "nodes": [
-    {
-      "name": "bootnode", 
-      "client": "besu", 
-      "rpcUrl": "http://127.0.0.1:8545", 
-      "privateTxUrl": "",
-      "accountAddress": "0x153d4b68cfa22491e489ee1b1201547a2f91b27f"
-    },
-    {
-      "name": "node2", 
-      "client": "besu", 
-      "rpcUrl": "http://127.0.0.1:8546", 
-      "privateTxUrl": "",
-      "accountAddress": "0x37cdfb254e7a8b89efb43bdf1c8f051e457482d9"
-    },
-    {
-      "name": "node3", 
-      "client": "besu", 
-      "rpcUrl": "http://127.0.0.1:8547", 
-      "privateTxUrl": "",
-      "accountAddress": "0x3d1b201ad13e1db3d2d7a95b7fd5bb569d2424b7"
-    },
-    {
-      "name": "node4", 
-      "client": "besu", 
-      "rpcUrl": "http://127.0.0.1:8548", 
-      "privateTxUrl": "",
-      "accountAddress": "0x8350ae1e5f201805f011cb3ddc18e9eb6ef084d1"
-    }
+    {"name": "bootnode", "client": "besu", "rpcUrl": "http://127.0.0.1:8545", "privateTxUrl": "", "accountAddress": "0x3254babb293252c631645d1cdc872695fb557eda"}, {"name": "node2", "client": "besu", "rpcUrl": "http://127.0.0.1:8546", "privateTxUrl": "", "accountAddress": "0x6414c1dbb1752e2018b2bb58a7246bd389c0c7d1"}, {"name": "node3", "client": "besu", "rpcUrl": "http://127.0.0.1:8547", "privateTxUrl": "", "accountAddress": "0x671bb547eac456ad63b65fbc36a4730c6e35c8a4"}, {"name": "node4", "client": "besu", "rpcUrl": "http://127.0.0.1:8548", "privateTxUrl": "", "accountAddress": "0xd889b7c1e7e8c7275954be2ae6a3811714f9d225"}
   ]
 }

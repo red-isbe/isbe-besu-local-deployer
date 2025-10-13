@@ -100,10 +100,11 @@ export default function ExplorerBlocks({
           <Container maxW="40%" m={0} p={0}>
             <Flex justifyContent="flex-end" gap="16px">
               <Tooltip label="Select number of blocks back to display data">
-                <Select maxW="20%" onChange={onSelectChange}>
+                <Select maxW="25%" onChange={onSelectChange}>
                   <option value="10">10</option>
-                  <option value="20">20</option>
-                  <option value="30">30</option>
+                  <option value="50">50</option>
+                  <option value="250">250</option>
+                  <option value="1000">1000</option>
                 </Select>
               </Tooltip>
               <FormControl as="form" onSubmit={onSubmit} maxW="50%">
