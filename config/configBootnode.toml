@@ -5,8 +5,10 @@ logging="INFO"
  
 p2p-enabled=true
 p2p-port=30303
+
+permissions-nodes-config-file-enabled=true
 rpc-http-enabled=true
-rpc-http-api=["ETH","NET","QBFT","ADMIN"]
+rpc-http-api=["ETH","NET","QBFT","ADMIN","PERM"]
 rpc-http-cors-origins=["all"]
 rpc-http-host="127.0.0.1"
 rpc-http-port=8545 

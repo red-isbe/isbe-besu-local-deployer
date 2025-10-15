@@ -13,6 +13,7 @@ echo "Docker is installed and running."
 
 # Parse command line arguments
 yes_flag=false
+num_bootnodes=""
 num_nodes=""
 besuVersion=""
 chainId=""
@@ -20,9 +21,10 @@ blockperiodseconds=""
 ellipticCurve=""
 ip=""
 
-while getopts "n:v:c:b:e:i:y" opt; do
+while getopts "n:t:v:c:b:e:i:y" opt; do
   case $opt in
     n) num_nodes=$OPTARG ;;
+	t) num_bootnodes=$OPTARG ;;
     v) besuVersion=$OPTARG ;;
     c) chainId=$OPTARG ;;
     b) blockperiodseconds=$OPTARG ;;
@@ -36,6 +38,7 @@ done
 
 # Set defaults
 num_nodes=${num_nodes:-4}
+num_bootnodes=${num_bootnodes:-2}
 besuVersion=${besuVersion:-"24.12.2"}
 chainId=${chainId:-2222}
 blockperiodseconds=${blockperiodseconds:-2}
@@ -52,6 +55,7 @@ fi
 if [[ "$defaults_used" == true && "$yes_flag" != true ]]; then
   echo "Using default configuration:"
   echo "  Number of nodes: $num_nodes"
+  echo "  Of which are bootnodes: $num_bootnodes"
   echo "  Besu version: $besuVersion"
   echo "  Chain ID: $chainId"
   echo "  Block period: $blockperiodseconds seconds"
@@ -67,6 +71,10 @@ fi
 # Validate inputs
 if ! [[ "$num_nodes" =~ ^[0-9]+$ ]] || (( num_nodes < 4 || num_nodes > 100 )); then
   echo "Number of nodes must be between 4 and 100."
+  exit 1
+fi
+if ! [[ "$num_bootnodes" =~ ^[0-9]+$ ]] || (( num_bootnodes < 1 || num_bootnodes > num_nodes )); then
+  echo "Number of bootnodes must be between 1 and number of total nodes."
   exit 1
 fi
 if ! [[ "$besuVersion" =~ ^[0-9]{2}\.[0-9]{1,2}\.[0-9]+$ ]]; then
@@ -156,12 +164,13 @@ cp networkFiles/genesis.json ../config/genesis.json
 bash ../moveKeys.sh 
 
 # Create the permissions_config.toml file in each node's data folder
-bash ../createPermitList.sh
+bash ../createPermitList.sh 
 
 # Return to the parent directory
 cd ..
 
 # Generate docker-compose.yml
+echo "Node 1 (bootnode 1)..."
 cat > docker-compose.yml << EOF
 networks:
   besu-network:
@@ -196,8 +205,41 @@ services:
       replicas: 1
 EOF
 
-for ((i=2; i<=num_nodes; i++)); do
+for ((i=2; i<=num_bootnodes; i++)); do
   port_offset=$((i-1))
+  echo "Node $i (bootnode $i)..."
+  p2p_port=$((30303 + port_offset))
+  rpc_port=$((8545 + port_offset))
+  metrics_port=$((9545 + port_offset))
+  node_ip="${ip}.$((30 + port_offset))"
+  cat >> docker-compose.yml << EOF
+  bootnode$i:
+    image: hyperledger/besu:${besuVersion}
+    container_name: bootnode$i
+    volumes:
+      - ./config:/opt/besu/config
+      - ./QBFT-Network/Node-$i/data:/opt/besu/data
+      - ./plugins:/opt/besu/plugins
+    ports:
+      - "${p2p_port}:${p2p_port}"
+      - "${rpc_port}:${rpc_port}"
+      - "${metrics_port}:${metrics_port}"
+    networks:
+      besu-network:
+        ipv4_address: ${node_ip}
+    command: --config-file=/opt/besu/config/configBootnode.toml --p2p-port=${p2p_port} --rpc-http-port=${rpc_port} --metrics-port=${metrics_port}
+    depends_on:
+      - bootnode
+    labels:
+      - "project-besu"
+    deploy:
+      replicas: 1
+EOF
+done
+
+for ((i=num_bootnodes+1; i<=num_nodes; i++)); do
+  port_offset=$((i-1))
+  echo "Node $i (Validation node $((i-num_bootnodes)))..."
   p2p_port=$((30304 + port_offset))
   rpc_port=$((8546 + port_offset))
   metrics_port=$((9546 + port_offset))
@@ -208,7 +250,7 @@ for ((i=2; i<=num_nodes; i++)); do
     container_name: node$i
     volumes:
       - ./config:/opt/besu/config
-      - ./QBFT-Network/Node-$i/data:/opt/besu/data
+      - ./QBFT-Network/Node-*#%J0R8ecoFoNJyLF%#*$i/data:/opt/besu/data
       - ./plugins:/opt/besu/plugins
     ports:
       - "${p2p_port}:${p2p_port}"
@@ -239,8 +281,9 @@ done
 
 # Fetch the bootnode enode and insert it into the validator config
 bash getEnode.sh ${ip}.30
-
-bash getEnode_permit_file.sh
+for ((i=2; i<=num_bootnodes; i++)); do
+  bash getEnode_bootnode_edit.sh "${ip}.$((30 + $((i-1))))"
+done
 
 # Launch all validator node containers with docker-compose
 docker compose up -d --wait
