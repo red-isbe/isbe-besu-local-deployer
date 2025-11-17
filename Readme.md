@@ -21,17 +21,23 @@ There is a [Troubleshooting section](#troubleshooting) also if you have some pro
 
 🟡 Docker and Docker-compose installed 
 
-🟡 jq installed ($ brew install jq)
+🟡 jq installed ($ apt-get install jq)
 
 🟡 Docker running 
 
 
 ### DEPLOYMENT
 
-To deploy and make it work, simply run the installation script (you may review it beforehand if you wish): 🙋🏻‍♂️
+To deploy and make it work for conversational mode, simply run the installation script (you may review it beforehand if you wish): 🙋🏻‍♂️
 
 ```bash
 bash install.sh      
+```
+
+For NO conversational (batch mode) it is possible to avoid prompting. It uses default configuration.
+You can run the installer non-interactively with the `-b` or `--batch` flag:
+```bash
+bash install.sh -b
 ```
 
 Ready ✅
@@ -88,8 +94,9 @@ Also, you can find an example of a plugin in the plugins/hello-plugin folder.
 
 🟡 First if you want access to the geth console you need to install first:
 ```bash
-brew install geth
+apt-get install geth
 ```
+(or brew install geth)
 
 Then run the Node Console
 ```bash
@@ -111,6 +118,40 @@ Also calls directly through curl like:
 curl -X POST --data '{"jsonrpc":"2.0",curl -X POST --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x<YourAccountAddress>", "latest"],"id":1}' http://0.0.0.0:8545
 ```
  
+
+### ➡️ Light Explorer + Node Validator Managment
+
+You can use the explorer folder to run a light explorer that will connect to your besu node and show you some information about the network.
+It is automatically configured to connect to the besu node running in localhost:8545 and with all the validators that you have configured in the installation.
+
+Go to the explorer folder:
+```bash
+cd explorer
+``` 
+
+Now you can run once:
+```bash
+npm install
+```
+
+And then to run the explorer:
+```bash
+npm run dev
+```
+
+This will create the explorer service in http://localhost:25000
+
+There you can see the blocks, transactions, and validators of your network.
+
+### ➡️ Node Information
+
+You can run the nodeInfo.sh script to see the information of the nodes in the network
+So you can see the enode, public key and address of each node.
+
+```bash
+bash nodeInfo.sh
+```
+
 Troubleshooting
 ---------------
 
@@ -131,7 +172,16 @@ docker container prune
 docker network prune
 ```
 
-- If you want to see which validators contains the extradata field in genesis.json, set that fiel in a extradata.txt in your PWD (just the 0x in your file)
+- If you want to see which validators contains the extradata field in genesis.json
+
+First set that field in a extradata.txt in your PWD (just the 0x in your file):
+
+```bash
+curl -s -X POST http://localhost:8545 -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["160", false],"id":1}' | jq -r '.result.extraData' > extradata.txt
+```
+
+Then decode it with besu docker image (you can change the version if you want):
+
 ```bash
 docker run --rm -v "$(pwd):/opt/besu/data" hyperledger/besu:24.12.2 rlp decode --from=/opt/besu/data/extradata.txt --type=QBFT_EXTRA_DATA
 ```
