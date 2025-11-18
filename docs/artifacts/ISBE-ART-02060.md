@@ -40,7 +40,7 @@
 * **Fases cubiertas:**
 
   * ✅ **Definición:**
-    Documento y scripts proporcionan la definición de alto nivel de la red: parámetros por defecto (4 validadores, Besu `24.12.2`, curva `secp256k1`, `chainId=2222`, `blockperiodseconds=2`, IP base `172.16.240.x`), y el esquema de carpetas (`QBFT-Network/Node-<n>/data`) que se crea al ejecutar el instalador. Estas definiciones se expresan y aplican mediante `install.sh` y el archivo de configuración `config/qbftConfigFile.json` que el script modifica (jq).
+    Documento y scripts proporcionan la definición de alto nivel de la red: parámetros por defecto (4 validadores, Besu `25.9.0`, curva `secp256k1`, `chainId=2222`, `blockperiodseconds=2`, IP base `172.16.240.x`), y el esquema de carpetas (`QBFT-Network/Node-<n>/data`) que se crea al ejecutar el instalador. Estas definiciones se expresan y aplican mediante `install.sh` y el archivo de configuración `config/qbftConfigFile.json` que el script modifica (jq).
   * ✅ **Desarrollo:**
     Materialización de la red: generación de archivos de red (`operator generate-blockchain-config` ejecutado en contenedor Besu), copia de `genesis.json`, distribución de keys a carpetas de nodos, creación de red Docker `besu-network`, arranque del `bootnode` y lanzado de los validadores por scripts auxiliares. Todo esto está automatizado en `install.sh` y los scripts auxiliares referenciados.
 
@@ -53,7 +53,7 @@
 
   * Requisitos SW: Docker, docker-compose, `jq`. (Readme indica explícitamente Docker y jq).
   * Scripts auxiliares no entregados en el ZIP (pero referenciados): `moveKeys.sh`, `getEnode.sh`, `createValidatorNodes.sh`, `clean.sh`. Estos deben existir en el mismo árbol de trabajo para que `install.sh` funcione correctamente; son dependencias lógicas del instalador.
-  * Imagen Docker `hyperledger/besu:<version>` (ej. `24.12.2` por defecto) disponible en el registro de contenedores.
+    * Imagen Docker `hyperledger/besu:<version>` (ej. `25.9.0` por defecto) disponible en el registro de contenedores.
 
 * **Mantenimiento:**
 
@@ -143,9 +143,9 @@ graph TD
             sh install.sh 
             Docker is installed and running.
             Cleaning up previous setup folders...
-            Do you want to -- CHANGE THE DEFAULT CONFIGURATION ? --  (4 validators nodes, Besu version 24.12.2, Eliptic Curve secp256k1, chainId 2222, 2 sec between blocks, IP 172.16.240.0) Please enter 'y' or 'n': y
+            Do you want to -- CHANGE THE DEFAULT CONFIGURATION ? --  (4 validators nodes, Besu version 25.9.0, Eliptic Curve secp256k1, chainId 2222, 2 sec between blocks, IP 172.16.240.0) Please enter 'y' or 'n': y
             Enter the number of nodes (including the bootnode, minimum 4): 5
-            Enter the version of Besu (format: 24.12.2): 21.12.1
+            Enter the version of Besu (format: 25.9.0): 21.12.1
             Enter the chain ID (e.g. 1234): 3333
             Enter the block period in seconds (between 2 - 30): 3
             Do you want to -- CHANGE THE ADVANCE CONFIGURATION -- ?  (Elliptic Curve, IP Address) Please enter 'y' or 'n': y
@@ -175,7 +175,7 @@ graph TD
 * **4.5. Reglas de negocio asociadas:**
 
   * Número mínimo de nodos: 4 (incluye bootnode). El script valida y exige `num_nodes >= 4 && <= 100`.
-  * Formato de versión de Besu exigido: regex `^[0-9]{2}\.[0-9]{2}\.[0-9]+$` (ej. `24.12.2`) en la entrada avanzada.
+  * Formato de versión de Besu exigido: regex `^[0-9]{2}\.[0-9]{2}\.[0-9]+$` (ej. `25.9.0`) en la entrada avanzada.
   * Rango válido de `blockperiodseconds`: entre 2 y 30 segundos.
   * Validación de IP base: debe pertenecer a rango privado (10.x.x, 172.16-31.x, 192.168.x).
 

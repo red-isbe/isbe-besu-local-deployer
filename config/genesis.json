@@ -1,7 +1,7 @@
 {
   "nonce" : "0x0",
   "timestamp" : "0x0",
-  "extraData" : "0xf87aa00000000000000000000000000000000000000000000000000000000000000000f85494671bb547eac456ad63b65fbc36a4730c6e35c8a4946414c1dbb1752e2018b2bb58a7246bd389c0c7d194d889b7c1e7e8c7275954be2ae6a3811714f9d225943254babb293252c631645d1cdc872695fb557edac080c0",
+  "extraData" : "0xf87aa00000000000000000000000000000000000000000000000000000000000000000f854945718cfab3df0a563edb5b5b3d523888aa5ddc8f69414685b7a722c019eeb3c57b9f6172b42fcf5837e94c5e2ff70e7ecd406591962bd68f020f96fca69ac94e5051641dc4a6140aa2ca3808a31d091543656b1c080c0",
   "gasLimit" : "0x1fffffffffffff",
   "gasUsed" : "0x0",
   "number" : "0x0",
@@ -30,8 +30,7 @@
       "blockperiodseconds" : 2,
       "epochlength" : 50,
       "requesttimeoutseconds" : 2
-    },
-    "ellipticCurve" : "secp256k1"
+    }
   },
   "alloc" : {
     "0xbebd29124435700f87a3821dc95eea8ab95fcb1b" : {
@@ -54,6 +53,14 @@
     },
     "0x049bEe05040C428aB767d5582eEC159EB5a9de75" : {
       "balance" : "1000000000000000000000000000"
+    },
+    "0x1a179f6dfcfaff34b4f045dd0d50a7b426233726" : {
+      "balance" : "1000000000000000000000000000",
+      "comment" : "secp256r1 account for deployment"
+    },
+    "0xdB11FEfA99BfD167ace7D73057909Afe9b2068C0" : {
+      "balance" : "1000000000000000000000000000",
+      "comment" : "secp256r1 account #2"
     }
   }
 }

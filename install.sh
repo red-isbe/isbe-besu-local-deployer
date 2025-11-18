@@ -1,5 +1,23 @@
 #!/bin/bash
 
+#=============================================================================
+# Hyperledger Besu QBFT Network Deployer
+#=============================================================================
+# This script automatically deploys a Hyperledger Besu QBFT network using Docker
+#
+# SUPPORTED ELLIPTIC CURVES:
+#   - secp256k1 (default) - Standard Ethereum-compatible curve
+#   - secp256r1           - FIPS/NIST compliant curve for regulatory environments
+#
+# DEFAULT CONFIGURATION:
+#   - 4 validator nodes
+#   - Besu version: 25.9.0
+#   - Elliptic Curve: secp256k1
+#   - Chain ID: 2222
+#   - Block period: 2 seconds
+#   - Network IP: 172.16.240.0/24
+#=============================================================================
+
 # Check if Docker is installed and running
 if ! command -v docker &>/dev/null; then
   echo "Docker could not be found. Please install Docker and try again."
@@ -26,8 +44,8 @@ epochlength=$(jq -r '.genesis.config.qbft.epochlength // empty' ./config/qbftCon
 epochlength=${epochlength:-$default_epochlength}
 num_nodes=$(jq -r '.blockchain.nodes.count // empty' ./config/qbftConfigFile.json)
 num_nodes=${num_nodes:-$default_num_nodes}
-ellipticCurve=$(jq -r '.genesis.config.ecCurve // empty' ./config/qbftConfigFile.json)
-ellipticCurve=${ellipticCurve:-$default_ellipticCurve}
+ecCurve=$(jq -r '.genesis.config.ecCurve // empty' ./config/qbftConfigFile.json)
+ecCurve=${ecCurve:-$default_ecCurve}
 besuVersion=$(jq -r '.blockchain.nodes.besuVersion // empty' ./config/qbftConfigFile.json)
 besuVersion=${besuVersion:-$default_besuVersion}
 ip=$(jq -r '.blockchain.nodes.ip // empty' ./config/qbftConfigFile.json)
@@ -38,7 +56,7 @@ def_chainId="$chainId"
 def_blockperiodseconds="$blockperiodseconds"
 def_epochlength="$epochlength"
 def_num_nodes="$num_nodes"
-def_ellipticCurve="$ellipticCurve"
+def_ecCurve="$ecCurve"
 def_besuVersion="$besuVersion"
 def_ip="$ip"
 
@@ -58,7 +76,7 @@ if [ "$auto_yes" = true ]; then
   echo "Auto-confirmation enabled (-y): applying default configuration..."
 else
   while [[ $default != "y" && $default != "n" ]]; do
-    read -p "Do you want to -- APPLY THIS CONFIGURATION ? [default enter key value] --  (validators nodes: $num_nodes, Besu version: $besuVersion, Elliptic Curve: $ellipticCurve, chainId: $chainId, sec between blocks: $blockperiodseconds, epoch length: $epochlength, IP: $ip) [Y/n]: " default
+    read -p "Do you want to -- APPLY THIS CONFIGURATION ? [default enter key value] --  (validators nodes: $num_nodes, Besu version: $besuVersion, Elliptic Curve: $ecCurve, chainId: $chainId, sec between blocks: $blockperiodseconds, epoch length: $epochlength, IP: $ip) [Y/n]: " default
     if [[ -z $default ]]; then default="y"; fi
     if [[ $default != "y" && $default != "n" ]]; then
       echo "Please enter 'y' or 'n'."
@@ -71,7 +89,7 @@ jq --argjson chainId "$chainId" '.genesis.config.chainId = $chainId' ./config/qb
 jq --argjson blockperiodseconds "$blockperiodseconds" '.genesis.config.qbft.blockperiodseconds = $blockperiodseconds' ./config/qbftConfigFile.json >temp.json && mv temp.json ./config/qbftConfigFile.json
 jq --argjson epochlength "$epochlength" '.genesis.config.qbft.epochlength = $epochlength' ./config/qbftConfigFile.json >temp.json && mv temp.json ./config/qbftConfigFile.json
 jq --argjson count "$num_nodes" '.blockchain.nodes.count = $count' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
-jq --arg ec "$ellipticCurve" '.genesis.config.ecCurve = $ec' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
+jq --arg ec "$ecCurve" '.genesis.config.ecCurve = $ec' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
 
 
 # If custom configuration is selected
@@ -95,7 +113,7 @@ if [[ $default == "n" ]]; then
 
   # Prompt user for Besu version
   while true; do
-    read -p "Enter the version of Besu (format: 24.12.2 or latest) [$besuVersion]: " ans
+    read -p "Enter the version of Besu (format: 25.9.0 or latest) [$besuVersion]: " ans
     if [[ -z "$ans" ]]; then
       break
     fi
@@ -103,7 +121,7 @@ if [[ $default == "n" ]]; then
       besuVersion="$ans"
       break
     else
-      echo "Invalid version format. Please use format like 24.12.2 or write \"latest\""
+      echo "Invalid version format. Please use format like 25.9.0 or write \"latest\""
     fi
   done
   jq --arg besuVersion "$besuVersion" '.blockchain.nodes.besuVersion = $besuVersion' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
@@ -155,36 +173,40 @@ if [[ $default == "n" ]]; then
 
   # Ask user if they want to change the network IP configuration
   while [[ $advanced != "y" && $advanced != "n" ]]; do
-    read -p "Do you want to -- CHANGE THE ADVANCE CONFIGURATION -- ?  (Elliptic Curve, IP Address) [y/N]: " advanced
-    if [[ -z $advanced ]]; then advanced="n"; fi
+    read -p "Do you want to -- APPLY THIS CONFIGURATION ? (Elliptic Curve: secp256k1, IP Address: 172.16.240) [Y/n]: " advanced
+    if [[ -z $advanced ]]; then advanced="y"; fi
     if [[ $advanced != "y" && $advanced != "n" ]]; then
       echo "Please enter 'y' or 'n'."
     fi
   done
 
   # If advanced network IP configuration is enabled
-  if [[ $advanced == "y" ]]; then
-    ip=""
-    ellipticCurve=""
-    # Eliptic curve selection
+  if [[ $advanced == "n" ]]; then
+    default_ip="172.16.240"
+    default_curve="secp256k1"
+    ip="$default_ip"
+    ecCurve="$default_curve"
+    # Elliptic curve selection
     while true; do
-      read -p "Enter the elliptic curve (secp256k1 or secp256r1) [$ellipticCurve]: " ans
+      read -p "Enter the elliptic curve (secp256k1 or secp256r1) [$default_curve]: " ans
       if [[ -z $ans ]]; then
+        ecCurve="$default_curve"
         break
       fi
       if [[ $ans == "secp256k1" || $ans == "secp256r1" ]]; then
-        ellipticCurve="$ans"
+        ecCurve="$ans"
         break
       else
         echo "You must enter either 'secp256k1' or 'secp256r1'. Please try again."
       fi
     done
-    jq --arg ec "$ellipticCurve" '.genesis.config.ecCurve = $ec' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
+    jq --arg ec "$ecCurve" '.genesis.config.ecCurve = $ec' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
 
     # IP address mask input  
     while true; do
-      read -p "Enter the IP address mask (first 3 numbers, e.g. 172.16.240) [$ip]: " ans
+      read -p "Enter the IP address mask (first 3 numbers, e.g. 172.16.240) [$default_ip]: " ans
       if [[ -z $ans ]]; then
+        ip="$default_ip"
         break
       fi
 
