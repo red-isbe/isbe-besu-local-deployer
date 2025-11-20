@@ -183,6 +183,6 @@ curl -s -X POST http://localhost:8545 -H "Content-Type: application/json" --data
 Then decode it with besu docker image (you can change the version if you want):
 
 ```bash
-docker run --rm -v "$(pwd):/opt/besu/data" hyperledger/besu:24.12.2 rlp decode --from=/opt/besu/data/extradata.txt --type=QBFT_EXTRA_DATA
+docker run --rm -v "$(pwd):/opt/besu/data" hyperledger/besu:25.9.0 rlp decode --from=/opt/besu/data/extradata.txt --type=QBFT_EXTRA_DATA
 ```
 

@@ -31,8 +31,7 @@
         "blockperiodseconds": 2,
         "epochlength": 50,
         "requesttimeoutseconds": 2
-      },
-      "ellipticCurve": "secp256k1"
+      }
     },
     "alloc": {
       "0xbebd29124435700f87a3821dc95eea8ab95fcb1b": {
@@ -55,6 +54,14 @@
       },
       "0x049bEe05040C428aB767d5582eEC159EB5a9de75": {
         "balance": "1000000000000000000000000000"
+      },
+      "0x1a179f6dfcfaff34b4f045dd0d50a7b426233726": {
+        "balance": "1000000000000000000000000000",
+        "comment": "secp256r1 account for deployment"
+      },
+      "0xdB11FEfA99BfD167ace7D73057909Afe9b2068C0": {
+        "balance": "1000000000000000000000000000",
+        "comment": "secp256r1 account #2"
       }
     }
   },
