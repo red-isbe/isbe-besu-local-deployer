@@ -6,11 +6,11 @@
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Nombre del artefacto**| ISBE-ART-02060 — Automatized Besu Docker Deployer|
 | **Origen**| Conjunto de scripts (`install.sh`, auxiliares) y configuraciones (`config/qbftConfigFile.json`) para generar y desplegar automáticamente una red Hyperledger Besu QBFT en contenedores Docker.|
-| **Estado**| Borrador |
-| **Versión del documento**   | 0.1.2|
-| **Fecha** | 2025-08-20   |
+| **Estado**| Validado |
+| **Versión del documento**   | 1.0.0|
+| **Fecha** | 2025-11-20   |
 | **Repositorio** | *https://github.com/alastria/isbe-besu-local-deployer*  |
-| **Commit**| *6878417fa6e2eef2da0ea583612f423e0e58f0b0*   |
+| **Commit**| *5f80c00b5cdc88ee6c346d6552ec915fd2a42912*   |
 
 ---
 
