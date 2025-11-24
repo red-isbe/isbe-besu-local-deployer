@@ -151,8 +151,26 @@ So you can see the enode, public key and address of each node.
 ```bash
 bash nodeInfo.sh
 ```
+### ➡️ Stop and Resume Network
 
-Troubleshooting
+If you want to stop the network and resume it later, you can use the following commands:
+
+To stop the network, you can use:
+
+```bash
+docker stop $(docker ps --filter label=project=besu -q)
+```
+
+To resume the network, you can use:
+
+```bash  
+docker start $(docker ps -a --filter label=project=besu -q)
+```
+
+In the meantime you can reallocate resources in your machine, and when you want to use the network again, just resume it with the command above, maintaining all the data and state of the network.
+
+
+### ➡️Troubleshooting
 ---------------
 
 - If you have problems with execute permissions
