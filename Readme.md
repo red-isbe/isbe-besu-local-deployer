@@ -178,7 +178,7 @@ In the meantime you can reallocate resources in your machine, and when you want 
 chmod +x install.sh clean.sh
 ```
 
--  For general error, try to clean all your old files first
+-  For general error(for example: "Pool overlaps with other one on this address space"), try to clean all your old files first
 
 ```bash
 bash clean.sh      
