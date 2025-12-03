@@ -49,6 +49,8 @@ bash clean.sh
 
 DONE 😎
 
+
+
 Optional
 -----
 
@@ -169,6 +171,20 @@ docker start $(docker ps -a --filter label=project=besu -q)
 
 In the meantime you can reallocate resources in your machine, and when you want to use the network again, just resume it with the command above, maintaining all the data and state of the network.
 
+### ➡️ Network Export / Import
+
+1. Export any running deployment (optional `-f` sets the zip name under `exports/`):
+  ```bash
+  bash exportNetwork.sh [-f my-network.zip]
+  ```
+  - Packages `config/`, `QBFT-Network/`, `plugins/`, and `metadata.json`; prompts before stopping containers to keep data consistent.
+2. Import a zip (required `-f` points to the archive to restore):
+  ```bash
+  bash importNetwork.sh -f exports/my-network.zip
+  ```
+  - Overwrites existing `config/`, `QBFT-Network/`, and `plugins/`, recreates the Docker network, and relaunches bootnode plus validators.
+3. After import the containers stay up; check with `docker ps --filter label=project=besu` or run `clean.sh` to start from scratch.
+
 
 ### ➡️Troubleshooting
 ---------------
@@ -204,3 +220,4 @@ Then decode it with besu docker image (you can change the version if you want):
 docker run --rm -v "$(pwd):/opt/besu/data" hyperledger/besu:25.9.0 rlp decode --from=/opt/besu/data/extradata.txt --type=QBFT_EXTRA_DATA
 ```
 
+Exportes need zip
