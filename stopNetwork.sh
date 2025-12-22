@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # -----------------------------------------------------------------------------------
 # Copyright (c) 2025 Comunidad de Madrid & Alastria
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -10,18 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # -----------------------------------------------------------------------------------
-# Node Information
-data-path="/opt/besu/data"
-genesis-file="/opt/besu/config/genesis.json"
-logging="INFO"
 
-p2p-enabled=true
-p2p-port=30303
-rpc-http-enabled=true
-rpc-http-api=["ETH","NET","QBFT","ADMIN"]
-rpc-http-cors-origins=["all"]
-rpc-http-host="127.0.0.1"
-rpc-http-port=8545
+echo "Parando todos los nodos..."
+docker stop $(docker ps --filter label=project=besu -q)
 
-host-allowlist=["*"]
-metrics-port=9545
+echo "Borrando los contenedores..."
+docker rm $(docker ps --filter label=project=besu -a -q)
+
+echo "ISBE Network parada"

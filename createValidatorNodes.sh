@@ -1,16 +1,37 @@
 #!/bin/bash
 
+# -----------------------------------------------------------------------------------
+# Copyright (c) 2025 Comunidad de Madrid & Alastria
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------------------
+
 BESU_VERSION=$1 # Besu version to use
 NUM_VALIDATORS=$2  # Total number of validator nodes
 BASE_IP=$3 # Base IP address for the network (e.g., 172.16.240)
-NETWORK_NAME="besu-network" 
+NETWORK_NAME="besu-network"
 
 
 # Create Docker network if it does not exist
 docker network inspect $NETWORK_NAME >/dev/null 2>&1 || \
 docker network create --driver=bridge --subnet=$BASE_IP.0/24 $NETWORK_NAME
 
-# Loop through validator nodes 
+# Determine if the existing network has a configured subnet, and capture it
+network_subnet=$(docker network inspect $NETWORK_NAME | jq -r '.[0].IPAM.Config[0].Subnet // empty' 2>/dev/null || true)
+if [[ -n "$network_subnet" ]]; then
+  echo "Network '$NETWORK_NAME' has subnet: $network_subnet"
+else
+  echo "Network '$NETWORK_NAME' has no user-configured subnet; Docker will assign IPs automatically."
+fi
+
+# Loop through validator nodes
 for ((i = 2; i <= NUM_VALIDATORS; i++)); do
   NODE_NAME="node$i"
   NODE_DIR="QBFT-Network/Node-$i/data"
@@ -22,7 +43,26 @@ for ((i = 2; i <= NUM_VALIDATORS; i++)); do
   METRICS_PORT=$((9546 + PORT_OFFSET))
   NODE_IP="$BASE_IP.$((30 + PORT_OFFSET))"
 
-  echo "Starting $NODE_NAME with IP $NODE_IP and ports: P2P=$P2P_PORT, RPC=$RPC_PORT, METRICS=$METRICS_PORT"
+  # Decide whether to pass --ip depending on whether NODE_IP belongs to network_subnet
+  ip_flag=""
+  if [[ -n "$network_subnet" ]]; then
+    if command -v python3 >/dev/null 2>&1; then
+      if python3 -c "import ipaddress,sys; sys.exit(0) if ipaddress.ip_address('$NODE_IP') in ipaddress.ip_network('$network_subnet') else sys.exit(1)"; then
+        ip_flag="--ip $NODE_IP"
+      else
+        echo "Desired IP $NODE_IP does not belong to network subnet $network_subnet; not using --ip for $NODE_NAME."
+        ip_flag=""
+      fi
+    else
+      echo "python3 not available; skipping IP membership check. Not using --ip for $NODE_NAME."
+      ip_flag=""
+    fi
+  else
+    echo "Network has no user-configured subnet; not using --ip for $NODE_NAME."
+    ip_flag=""
+  fi
+
+  echo "Starting $NODE_NAME with desired IP $NODE_IP and ports: P2P=$P2P_PORT, RPC=$RPC_PORT, METRICS=$METRICS_PORT"
 
   docker run -d --name $NODE_NAME \
     -v "$(pwd)/config:/opt/besu/config" \
@@ -33,12 +73,18 @@ for ((i = 2; i <= NUM_VALIDATORS; i++)); do
     -p $METRICS_PORT:$METRICS_PORT \
     --label project=besu \
     --network $NETWORK_NAME \
-    --ip $NODE_IP \
+    $ip_flag \
     hyperledger/besu:$BESU_VERSION \
     --config-file=/opt/besu/config/configValidators.toml \
     --p2p-port=$P2P_PORT \
     --rpc-http-port=$RPC_PORT \
     --metrics-port=$METRICS_PORT
+
+  # If Docker assigned IP dynamically, report the assigned IP
+  if [[ -z "$ip_flag" ]]; then
+    assigned_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $NODE_NAME 2>/dev/null || true)
+    echo "$NODE_NAME assigned IP: ${assigned_ip:-(unknown)}"
+  fi
 done
 
 # Generate explorer config deterministically from NUM_VALIDATORS
