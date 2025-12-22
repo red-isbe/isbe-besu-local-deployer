@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# -----------------------------------------------------------------------------------
+# Copyright (c) 2025 Comunidad de Madrid & Alastria
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------------------
+
 #=============================================================================
 # Hyperledger Besu QBFT Network Deployer
 #=============================================================================
@@ -202,7 +215,7 @@ if [[ $default == "n" ]]; then
     done
     jq --arg ec "$ecCurve" '.genesis.config.ecCurve = $ec' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
 
-    # IP address mask input  
+    # IP address mask input
     while true; do
       read -p "Enter the IP address mask (first 3 numbers, e.g. 172.16.240) [$default_ip]: " ans
       if [[ -z $ans ]]; then
@@ -226,7 +239,7 @@ if [[ $default == "n" ]]; then
     done
     jq --arg ip "$ip" '.blockchain.nodes.ip = $ip' ./config/qbftConfigFile.json > temp.json && mv temp.json ./config/qbftConfigFile.json
   fi
-  echo "Deploying Besu! " 
+  echo "Deploying Besu! "
 fi
 
 echo "Cleaning previous Docker Besu containers and folders from previous installations..."
@@ -270,7 +283,7 @@ docker run --rm \
 cp networkFiles/genesis.json ../config/genesis.json
 
 # Move the generated validator keys to each node's data folder
-bash ../moveKeys.sh 
+bash ../moveKeys.sh
 
 # Create the custom Docker network if not already created
 docker network inspect besu-network >/dev/null 2>&1 || docker network create --driver=bridge --subnet=${ip}.0/24 besu-network
