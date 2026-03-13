@@ -42,6 +42,8 @@ if ! docker info &>/dev/null; then
 fi
 echo "Docker is installed and running."
 
+current_dir=$(pwd)
+
 # Clean up previous setup and containers
 echo "Cleaning up previous setup folders..."
 docker-compose down -v 2>/dev/null
@@ -298,16 +300,13 @@ if [ "$USE_EXISTING_GENESIS" = false ]; then
 
   # Move the generated validator keys to each node's data folder
   bash ../moveKeys.sh
-  cd ..
+  cd "$current_dir"
 else
   echo "   ✅ SKIPPING genesis generation - using existing config/genesis.json"
 fi
 
 # Create the custom Docker network if not already created
 docker network inspect besu-network >/dev/null 2>&1 || docker network create --driver=bridge --subnet=${ip}.0/24 besu-network
-
-# Return to the parent directory
-cd ..
 
 # Start the bootnode container
 docker run -d --name bootnode \
