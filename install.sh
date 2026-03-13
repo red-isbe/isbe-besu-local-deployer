@@ -42,6 +42,8 @@ if ! docker info &>/dev/null; then
 fi
 echo "Docker is installed and running."
 
+current_dir=$(pwd)
+
 # Clean up previous setup and containers
 echo "Cleaning up previous setup folders..."
 docker-compose down -v 2>/dev/null
@@ -242,15 +244,29 @@ if [[ $default == "n" ]]; then
   echo "Deploying Besu! "
 fi
 
-echo "Cleaning previous Docker Besu containers and folders from previous installations..."
-
-docker ps -a --filter "label=project=besu" -q | xargs -r docker stop
-docker ps -a --filter "label=project=besu" -q | xargs -r docker rm
-
-if [ -d "QBFT-Network" ]; then
-  find QBFT-Network -mindepth 1 ! -name ".gitkeep" -exec rm -rf {} +
+# --- CRITICAL: Check if genesis already exists (from prebuilt/bootstrap) ---
+if [ -f "config/genesis.json" ]; then
+  echo "✅ Existing genesis.json detected (from prebuilt/bootstrap or previous run)"
+  GENESIS_SIZE=$(stat -c%s "config/genesis.json" 2>/dev/null || wc -c < "config/genesis.json")
+  CONTRACT_COUNT=$(jq '.alloc | keys | length' "config/genesis.json" 2>/dev/null || echo "0")
+  echo "   Genesis size: $GENESIS_SIZE bytes"
+  echo "   Deployed contracts: $CONTRACT_COUNT"
+  if [ "$CONTRACT_COUNT" -gt 10 ]; then
+    echo "   Preserving existing genesis to maintain pre-deployed contracts..."
+    USE_EXISTING_GENESIS=true
+  else
+    echo "   Genesis has few contracts, will regenerate..."
+    USE_EXISTING_GENESIS=false
+  fi
+else
+  echo "   No existing genesis.json found - will generate new genesis..."
+  USE_EXISTING_GENESIS=false
 fi
-rm -f config/genesis.json
+
+# Only remove genesis if we're going to regenerate it
+if [ "$USE_EXISTING_GENESIS" = false ]; then
+  rm -f config/genesis.json
+fi
 
 if docker network inspect besu-network >/dev/null 2>&1; then
   echo "Removing old Docker network 'besu-network'..."
@@ -266,30 +282,31 @@ while [ "$i" -le "$num_nodes" ]; do
   i=`expr $i + 1`
 done
 
-cd QBFT-Network
+# Genearar genesis SOLO si no existe ya
+if [ "$USE_EXISTING_GENESIS" = false ]; then
+  echo "   Generating new genesis with Besu..."
+  cd QBFT-Network
+  docker run --rm \
+    -v "$(pwd)/../config:/opt/besu/config" \
+    -v "$(pwd):/opt/besu/output" \
+    hyperledger/besu:$besuVersion \
+    operator generate-blockchain-config \
+    --config-file=/opt/besu/config/qbftConfigFile.json \
+    --to=/opt/besu/output/networkFiles \
+    --private-key-file-name=key 2>/dev/null
 
-# Generate genesis and validator keys using Besu
-docker run --rm \
-  -v "$(pwd)/../config:/opt/besu/config" \
-  -v "$(pwd):/opt/besu/output" \
-  hyperledger/besu:$besuVersion \
-  operator generate-blockchain-config \
-  --config-file=/opt/besu/config/qbftConfigFile.json \
-  --to=/opt/besu/output/networkFiles \
-  --private-key-file-name=key 2>/dev/null
+  # Copy the generated genesis to the config folder
+  cp networkFiles/genesis.json ../config/genesis.json
 
-
-# Copy the generated genesis to the config folder
-cp networkFiles/genesis.json ../config/genesis.json
-
-# Move the generated validator keys to each node's data folder
-bash ../moveKeys.sh
+  # Move the generated validator keys to each node's data folder
+  bash ../moveKeys.sh
+  cd "$current_dir"
+else
+  echo "   ✅ SKIPPING genesis generation - using existing config/genesis.json"
+fi
 
 # Create the custom Docker network if not already created
 docker network inspect besu-network >/dev/null 2>&1 || docker network create --driver=bridge --subnet=${ip}.0/24 besu-network
-
-# Return to the parent directory
-cd ..
 
 # Start the bootnode container
 docker run -d --name bootnode \
